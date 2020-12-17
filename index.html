@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <title> BLINK! Online </title>
+        <link rel="stylesheet" href="main.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    </head>
+    <body oncontextmenu="return false;">
+        Blink! game.
+        <button type="button" name="startGame" id = "start">CLICK ME TO START!</button>
+
+        <div id="gameboard">
+            hello <br> <br>
+            PILE 1
+            <div id="pile1"> </div>
+            PILE 2
+            <div id="pile2"> </div>
+
+            <br>
+            <br>
+            <br>
+            Player 1 Hand
+            <div id="p1Hand">  </div>
+
+            Player 2 Hand
+            <div id="p2Hand">  </div>
+
+            <br>
+            canvas here
+            <canvas id="myCanvas" width="500" height="300">
+                Your browser does not support the canvas element.
+            </canvas>
+        </div>
+
+    </body>
+    <script src = "app.js"> </script>
+    <noscript>Please turn on JavaScript!</noscript>
+</html>
