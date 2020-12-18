@@ -1,6 +1,6 @@
 .card
 {
-	padding: 10px;
+	padding: 15px;
 	border: solid 1px #808080;
 	background-color: white;
 	display: inline-block;
@@ -12,7 +12,42 @@
     cursor: pointer;
 }
 
-.hand
+#gameboard
+{
+    margin: auto;
+    width: 75%;
+    padding: 150px 0;
+    text-align: center;
+}
+
+.hand0, .hand1
 {
     font-weight: bold;
+}
+
+.phand
+{
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    width: 50%;
+}
+
+.discard-pile {
+    display: flex;
+    width: 50%;
+    margin: auto;
+}
+
+.discard-child {
+    flex: 1;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    padding: 50px 10px;
+}
+
+.discard-child:first-child {
+    margin-right: 20px;
 }

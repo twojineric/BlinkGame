@@ -11,26 +11,17 @@
         <button type="button" name="startGame" id = "start">CLICK ME TO START!</button>
 
         <div id="gameboard">
-            hello <br> <br>
-            PILE 1
-            <div id="pile1"> </div>
-            PILE 2
-            <div id="pile2"> </div>
-
-            <br>
-            <br>
-            <br>
-            Player 1 Hand
-            <div id="p1Hand">  </div>
 
             Player 2 Hand
-            <div id="p2Hand">  </div>
+            <div id="p2Hand" class="phand">  </div>
 
-            <br>
-            canvas here
-            <canvas id="myCanvas" width="500" height="300">
-                Your browser does not support the canvas element.
-            </canvas>
+            <div class="discard-pile">
+                <div id="pile1" class="discard-child"> PILE 1 </div>
+                <div id="pile2" class="discard-child"> PILE 2 </div>
+            </div>
+
+            <div id="p1Hand" class = "phand">  </div>
+            Player 1 Hand
         </div>
 
     </body>

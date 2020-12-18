@@ -1,6 +1,4 @@
 const startButton = document.getElementById('start');
-const p1Hand = document.getElementById("p1Hand"); //dont think we need to declare these here
-const p2Hand = document.getElementById("p2Hand");
 let currRound;
 
 let symbolArr = ['cross', 'diamond', 'circle', 'lightningBolt', 'triangle', 'star'];
@@ -16,42 +14,44 @@ function main()
         currRound.startRound('player1', 'player2');
         currRound.renderPiles();
         //clear and render hands
-        p1Hand.innerHTML = "";
-        p2Hand.innerHTML = "";
-        currRound.renderHand(currRound.players[0], "p1Hand");
-        currRound.renderHand(currRound.players[1], "p2Hand");
+        document.getElementById("p1Hand").innerHTML = "";
+        document.getElementById("p2Hand").innerHTML = "";
+        currRound.renderHand(0, "p1Hand");
+        currRound.renderHand(1, "p2Hand");
         //attach click eventlisteners to each of the cards on the hand.
+        currRound.attachListeners(0);
         currRound.attachListeners(1);
-        currRound.attachListeners(2);
     });
 }
 
+//this function is called when one of the players clicks on a card
+//sends to the respective pile, and updates the players hand and the pile.
 function testValid(event)
 {
     let testCard = event.path[0].className.split(' ');
-    let mouseClick = event.button; //0 left click, 2 right click
-
+    let mouseClick = event.button;
     let tcColor = testCard[0];
     let tcNum = testCard[1];
     let tcSymbol = testCard[2];
-
+    let tcPlayer = testCard[4].substring(testCard[4].length - 1);
     //left click sends to pile1, right click to p2
-    let targetCard = (mouseClick == 0) ? currRound.pile1: currRound.pile2;
+    let pileCard = (mouseClick == 0) ? currRound.pile1: currRound.pile2;
 
-    if(tcColor == targetCard.color || tcNum == targetCard.num || tcSymbol == targetCard.symbol)
+    if(tcColor == pileCard.color || tcNum == pileCard.num || tcSymbol == pileCard.symbol)
     {
-        targetCard.color = tcColor;
-        targetCard.num = tcNum;
-        targetCard.symbol = tcSymbol;
+        pileCard.color = tcColor;
+        pileCard.num = tcNum;
+        pileCard.symbol = tcSymbol;
         currRound.renderPiles(); //move clicked card to the respective pile
 
-        currRound.players[0].playerHand.pop();
-        currRound.players[0].fillHand();
-
-        currRound.renderHand(currRound.players[0], 'p1Hand');
-        currRound.renderHand(currRound.players[1], 'p2Hand');
-        currRound.attachListeners(1);
-        currRound.attachListeners(2);
+        currRound.players[tcPlayer].replaceCard(tcColor, tcNum, tcSymbol); //draw a new card
+        if(currRound.players[tcPlayer].handIsEmpty())//check if a player has won
+        {
+            console.log("WINNER!!");
+        }
+        let handLoc = tcPlayer == 0 ? 'p1Hand': 'p2Hand';
+        currRound.renderHand(tcPlayer, handLoc); //rerender the hand
+        currRound.attachListeners(tcPlayer);
     }
     else
     {
@@ -62,7 +62,7 @@ function testValid(event)
 class Card
 {
     //add "owner" string to card
-    constructor(symbol, color, num)
+    constructor(color, num, symbol)
     {
         this.color = color;
         this.num = num;
@@ -77,15 +77,14 @@ class Deck
         this.theDeck = [];
 
         //create all the cards
-        for(let i = 0; i < symbolArr.length; i++)  {
-            for(let j = 0; j < colorArr.length; j++) {
-                for(let k = 0; k < numArr.length; k++) {
-                this.theDeck.push(new Card(symbolArr[i], colorArr[j], numArr[k]));
+        for(let i = 0; i < colorArr.length; i++)  {
+            for(let j = 0; j < numArr.length; j++) {
+                for(let k = 0; k < symbolArr.length; k++) {
+                this.theDeck.push(new Card(colorArr[i], numArr[j], symbolArr[k]));
                 }
             }
         }
-
-        //run fisher yates to shuffle
+        //fisher yates shuffle
         for (let i = this.theDeck.length - 1; i > 0; i--)
         {
             let j = Math.floor(Math.random() * (i + 1));
@@ -105,9 +104,9 @@ class Player
         this.playerDeck = []; //the rest
     }
 
-    deckIsEmpty()
+    handIsEmpty()
     {
-        return this.playerDeck.length == 0;
+        return this.playerHand.length == 0;
     }
 
     //draws cards from deck until hand is full (3 cards)
@@ -117,8 +116,33 @@ class Player
         while(this.playerDeck.length > 0 && this.playerHand.length < 3)
         {
             this.playerHand.push(this.playerDeck.pop());
-            console.log(`deck size is now ${this.playerDeck.length}`);
         }
+    }
+
+    //searches hand for a card with the given properties
+    //if found, replaces it with the top card of the deck and returns true
+    //if not, nothing happens and returns false
+    replaceCard(color, num, symbol)
+    {
+        for(let i = 0; i < this.playerHand.length; i++)
+        {
+            let c = this.playerHand[i];
+            if(c.symbol == symbol && c.color == color && c.num == num)
+            {
+                let cardFromDeck = this.playerDeck.pop();
+
+                if(!cardFromDeck) //card doesnt exist - deck is empty
+                {
+                    this.playerHand.splice(i, 1); //just remove the card
+                }
+                else
+                {
+                    this.playerHand[i] = cardFromDeck;
+                }
+                return true;
+            }
+        }
+        return false;
     }
 }
 
@@ -158,7 +182,7 @@ class Round
 
     attachListeners(playerNum)
     {
-        let pHand = (playerNum == 1) ? p1Hand : p2Hand; //wtf going on here
+        let pHand = (playerNum == 0) ? document.getElementById("p1Hand") : document.getElementById("p2Hand"); //wtf going on here
         let cardArr = pHand.childNodes;
 
         for(let cn of pHand.childNodes)
@@ -170,36 +194,35 @@ class Round
 
     //renders the card at the id string elem
     // if replace flag is true, overwrites whatever is currently at 'elem'
-    //if isInHand is true, adds the card to the HTML 'hand' class
-    renderCard(card, elem, replace, isInHand)
+    // inHand flag is 0 for p1 and 1 for p2, -1 for not in hand.
+    renderCard(card, elem, replace, inHand)
     {
         let element = document.getElementById(elem);
         if(replace) element.innerHTML = ""; //overwrite
 
         let c = document.createElement("div");
-        let cardClass = card.color + " " + card.num + " " + card.symbol;
-        c.innerHTML = card.color + " " + card.num + " " + card.symbol;
-        cardClass = cardClass + ((isInHand) ? ' card hand': ' card');
+        let cardClass = `${card.color} ${card.num} ${card.symbol} card`;
+        if(inHand == 0 || inHand == 1) cardClass = cardClass + " hand" + inHand;
         c.className = cardClass;
+        c.innerHTML = `${card.color} ${card.num} ${card.symbol}`;
         element.appendChild(c);
     }
 
     //renders a player's 3 cards at the html div elem (string)
     //overwrites whatever is currently at 'elem';
-    renderHand(pl, elem)
+    renderHand(plNum, elem)
     {
-        if(!pl instanceof Player) throw "renderHand(p , elem) not instance of player!";
         document.getElementById(elem).innerHTML = "";
-        for(const c of pl.playerHand)
+        for(const c of this.players[plNum].playerHand)
         {
-            this.renderCard(c, elem, false, true);
+            this.renderCard(c, elem, false, plNum);
         }
     }
 
     renderPiles()
     {
-        this.renderCard(this.pile1, 'pile1', true, false);
-        this.renderCard(this.pile2, 'pile2', true, false);
+        this.renderCard(this.pile1, 'pile1', true, -1);
+        this.renderCard(this.pile2, 'pile2', true, -1);
     }
 }
 
