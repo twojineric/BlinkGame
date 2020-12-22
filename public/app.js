@@ -1,12 +1,10 @@
-const startButton = document.getElementById('start');
+import { Round } from './round.js';
+const bestOf1 = document.getElementById('bestOf1');
+const bestOf3 = document.getElementById('bestOf3');
 let socket = io();
 let currRound;
 
-let symbolArr = ['cross', 'diamond', 'circle', 'lightningBolt', 'triangle', 'star'];
-let colorArr = ['blue', 'red', 'green', 'black', 'yellow', 'purple'];
-let numArr = ["one", "two", "three", "four", "five"];
-
-startButton.addEventListener('click', () => {
+bestOf1.addEventListener('click', () => {
     currRound = new Round('player1', 'player2');
     socket.emit('startGame', {
         roundData: currRound
@@ -14,7 +12,8 @@ startButton.addEventListener('click', () => {
 });
 
 socket.on('startGame', (data) => {
-    startButton.style.display = "none";
+    bestOf1.style.display = "none";
+    bestOf3.style.display = "none";
     currRound = data.roundData;
     renderPile();
     //clear and render hands
@@ -76,7 +75,7 @@ function renderHand(plNum, elem)
     }
 }
 
-//renders both piles
+//render both piles
 function renderPile()
 {
     renderCard(currRound.pile1, 'pile1', true, -1);
@@ -140,102 +139,5 @@ function testValid(eventObj)
     else
     {
         console.log("cards do not match");
-    }
-}
-
-class Card
-{
-    constructor(color, num, symbol)
-    {
-        this.color = color;
-        this.num = num;
-        this.symbol = symbol;
-    }
-}
-
-class Deck
-{
-    constructor()
-    {
-        this.theDeck = [];
-
-        //create all the cards
-        for(let i = 0; i < colorArr.length; i++)  {
-            for(let j = 0; j < numArr.length; j++) {
-                for(let k = 0; k < symbolArr.length; k++) {
-                this.theDeck.push(new Card(colorArr[i], numArr[j], symbolArr[k]));
-                }
-            }
-        }
-        //fisher yates shuffle
-        for (let i = this.theDeck.length - 1; i > 0; i--)
-        {
-            let j = Math.floor(Math.random() * (i + 1));
-            let temp = this.theDeck[i];
-            this.theDeck[i] = this.theDeck[j];
-            this.theDeck[j] = temp;
-        }
-    }
-}
-
-class Player
-{
-    constructor(name)
-    {
-        this.name = name;
-        this.playerHand = []; //3 cards
-        this.playerDeck = []; //the rest
-    }
-
-    //draws cards from deck until hand is full (3 cards)
-    //make sure to call render!
-    fillHand()
-    {
-        while(this.playerDeck.length > 0 && this.playerHand.length < 3)
-        {
-            this.playerHand.push(this.playerDeck.pop());
-        }
-    }
-}
-
-class Round
-{
-    constructor(player1Name, player2Name)
-    {
-        this.pile1;
-        this.pile2;
-        this.players = [];
-
-        this.players.push(new Player(player2Name));
-        this.players.push(new Player(player1Name));
-
-        //make deck and give each player half
-        let d = new Deck();
-        let len = d.theDeck.length;
-        for(let i = 0; i < len; i++)
-        {
-            //each player gets half the cards
-            this.players[i % 2].playerDeck.push(d.theDeck.pop());
-        }
-        //each player fills their hand with 3 cards
-        this.players[0].fillHand();
-        this.players[1].fillHand();
-
-        //add countdown
-
-        //flip the top card of each deck to the play area
-        this.pile1 = this.players[0].playerDeck.pop();
-        this.pile2 = this.players[1].playerDeck.pop();
-    }
-}
-
-class Game
-{
-    constructor(firstTo) //first to x number of rounds
-    {
-        if(isNaN(firstTo))
-            throw "err: Number of Rounds NaN";
-        if(firstTo < 1)
-            throw "err: Positive integer number of rounds only";
     }
 }
