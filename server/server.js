@@ -22,11 +22,16 @@ io.on('connection', (socket) => {
         console.log('User disconnected.');
     });
 
-    socket.on('startGame', (roundData) => {
-    	io.emit('startGame', roundData);
+    socket.on('startRound', (roundData) => {
+    	io.emit('startRound', roundData);
     });
 
     socket.on('cardClick', (ev) => {
         io.emit('cardClick', ev);
     });
+
+    socket.on('roundWin', (info) => {
+        //maybe check for game winner here??
+        io.emit('roundWin', info);
+    })
 });

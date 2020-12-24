@@ -1,20 +1,27 @@
 import { Round } from './round.js';
+import { Game } from './game.js';
 const bestOf1 = document.getElementById('bestOf1');
 const bestOf3 = document.getElementById('bestOf3');
 let socket = io();
+
+let theGame;
 let currRound;
 
 bestOf1.addEventListener('click', () => {
-    currRound = new Round('player1', 'player2');
-    socket.emit('startGame', {
-        roundData: currRound
+    theGame = new Game(1, 'player1', 'player2');
+    //currRound = new Round('player1', 'player2');
+    socket.emit('startRound', {
+        gameData: theGame,
+        roundNum: 1
     });
 });
 
-socket.on('startGame', (data) => {
+socket.on('startRound', (data) => {
+    console.log("starting round " + data.roundNum);
     bestOf1.style.display = "none";
     bestOf3.style.display = "none";
-    currRound = data.roundData;
+    theGame = data.gameData;
+    currRound = data.gameData.rounds[data.roundNum - 1];
     renderPile();
     //clear and render hands
     document.getElementById("p1Hand").innerHTML = "";
@@ -28,6 +35,16 @@ socket.on('startGame', (data) => {
 
 socket.on('cardClick', (e) => {
     testValid(e);
+});
+
+socket.on('roundWin', (info) => {
+    let nextRound = new Round(theGame.player1Name, theGame.player2Name);
+    theGame.rounds.push(nextRound);
+
+    socket.emit('startRound', {
+        gameData: theGame,
+        roundNum: theGame.rounds.length
+    });
 });
 
 function attachListeners(plNum)
@@ -44,6 +61,7 @@ function attachListeners(plNum)
             socket.emit('cardClick', {
                 testCard: testCard,
                 mouseClick: mouseClick
+                //maybe send the parent obj along with it???
             });
         };
     }
@@ -57,19 +75,42 @@ function renderCard(card, elem, replace, inHand)
     let element = document.getElementById(elem);
     if(replace) element.innerHTML = ""; //overwrite
 
-    let c = document.createElement("div");
     let cardClass = `${card.color} ${card.num} ${card.symbol} card`;
     if(inHand == 0 || inHand == 1) cardClass = cardClass + " hand" + inHand;
-    c.className = cardClass;
-    c.innerHTML = `${card.color} ${card.num} ${card.symbol}`;
+
+    const suitPositions =
+    {
+      one: [[0, 0]],
+      two: [[0, -1], [0, 1]],
+      three: [[0, -1], [0, 0], [0, 1]],
+      four: [[-1, -1], [1, -1], [-1, 1], [1, 1]],
+      five: [[-1, -1], [1, -1], [0, 0], [-1, 1], [1, 1]]
+    };
+
+    const createSuit = (suit) => (pos) => {
+      const [ x, y ] = pos;
+      return div({
+        class: 'card-suit',
+        style: `left: ${x * 100}%; top: ${y * 100}%;`
+      }, [ suit ]);
+    };
+
+    let c = div({ class: cardClass }, [
+        div({ class: 'card-suits' },
+          suitPositions[card.num].map(createSuit(card.symbol))
+        )
+      ]);
+
     element.appendChild(c);
 }
 
 //renders player #plNum's hand at html string elem
 function renderHand(plNum, elem)
 {
+    let plyr = currRound.players[plNum];
     document.getElementById(elem).innerHTML = "";
-    for(const c of currRound.players[plNum].playerHand)
+    document.getElementById(`p${plNum}Num`).innerHTML = plyr.playerDeck.length + plyr.playerHand.length;
+    for(const c of plyr.playerHand)
     {
         renderCard(c, elem, false, plNum);
     }
@@ -130,6 +171,9 @@ function testValid(eventObj)
         replaceCard(tcColor, tcNum, tcSymbol, tcPlayer); //draw a new card
         if(currRound.players[tcPlayer].playerHand.length == 0)//check if a player has won
         {
+            socket.emit('roundWin', {
+                player: tcPlayer
+            });
             console.log("WINNER!!");
         }
         let handLoc = tcPlayer == 0 ? 'p1Hand': 'p2Hand';
@@ -141,3 +185,25 @@ function testValid(eventObj)
         console.log("cards do not match");
     }
 }
+
+
+const el = (tagName, attributes, children) => {
+  const element = document.createElement(tagName);
+  if (attributes) {
+    for (const attrName in attributes) {
+      element.setAttribute(attrName, attributes[attrName]);
+    }
+  }
+  if (children) {
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
+      if (typeof child === 'string') {
+        element.appendChild(document.createTextNode(child));
+      } else {
+        element.appendChild(child);
+      }
+    }
+  }
+  return element;
+};
+const div = (a, c) => el('div', a, c);

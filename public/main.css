@@ -1,38 +1,80 @@
 .card
 {
-	padding: 15px;
+	padding: 8px;
 	border: solid 1px #808080;
 	background-color: white;
 	display: inline-block;
-	border-radius: 10px;
-	font-size: 14pt;
-	text-align: center;
-	color: black;
+	border-radius: 0.25em;
 	margin: 3px;
-    cursor: pointer;
+    width: 5em;
+    height: 7em;
+    position: relative;
+}
+
+.card.yellow
+{
+    /* yes im aware */
+    color: orange;
+}
+
+.card.blue
+{
+    color: blue;
+}
+
+.card.red
+{
+    color: red;
+}
+
+.card.black
+{
+    color: black;
+}
+
+.card.green
+{
+    color: green;
+}
+
+.card.purple
+{
+    color: purple;
+}
+
+.card-suits {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 17.5%;
+  height: 25%;
+  transform: translate(-50%, -50%);
+}
+
+.card-suit {
+  font-size: 1.3em;
+  position: absolute;
 }
 
 #gameboard
 {
     margin: auto;
-    width: 75%;
-    padding: 150px 0;
+    width: 50%;
+    padding: 20px 0;
     text-align: center;
-}
-
-.hand0, .hand1
-{
-    font-weight: bold;
+    user-select: none;
 }
 
 .phand
 {
     margin: auto;
-    margin-top: 10px;
-    margin-bottom: 10px;
-    padding-top: 20px;
-    padding-bottom: 20px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    padding-top: 5px;
+    padding-bottom: 5px;
     width: 50%;
+    font-weight: bold;
+    cursor: pointer;
 }
 
 .discard-pile {
@@ -45,7 +87,7 @@
     flex: 1;
     margin-top: 20px;
     margin-bottom: 20px;
-    padding: 50px 10px;
+    padding: 10px 25px;
 }
 
 .discard-child:first-child {
