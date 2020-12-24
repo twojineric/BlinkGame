@@ -56,12 +56,14 @@ function attachListeners(plNum)
     {
         if(!cn.className.includes('hand')) continue;
         cn.onmousedown = function(event) {
-            let testCard = event.path[0].className.split(' ');
+            let testCard;
+            testCard = event.path[0].className.split(' ');
+            if(testCard.length < 2) testCard = event.path[1].className.split(' ');
+            if(testCard.length < 2) testCard = event.path[2].className.split(' ');
             let mouseClick = event.button;
             socket.emit('cardClick', {
                 testCard: testCard,
-                mouseClick: mouseClick
-                //maybe send the parent obj along with it???
+                mouseClick: mouseClick,
             });
         };
     }
@@ -185,7 +187,6 @@ function testValid(eventObj)
         console.log("cards do not match");
     }
 }
-
 
 const el = (tagName, attributes, children) => {
   const element = document.createElement(tagName);
