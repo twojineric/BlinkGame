@@ -30,6 +30,7 @@ socket.on('startRound', (data) => {
     theGame = data.gameData;
     currRound = theGame.rounds[theGame.rounds.length - 1];
     console.log("starting round " + theGame.rounds.length);
+    document.getElementById("currRound").innerHTML = `Round ${theGame.rounds.length}`;
     renderPile();
     //render hands
     document.getElementById("p1Hand").innerHTML = "";
