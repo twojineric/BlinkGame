@@ -31,7 +31,37 @@ io.on('connection', (socket) => {
     });
 
     socket.on('roundWin', (info) => {
-        //maybe check for game winner here??
-        io.emit('roundWin', info);
+        let theGame = info.gameData;
+        let winner = info.player;
+        let roundNum = theGame.rounds.length - 1;
+        let playerID = parseInt(info.playerNum, 10) + 1
+        theGame.roundWins[roundNum] = playerID;
+
+        let playerWinCount = 0;
+
+        for(const r of theGame.roundWins)
+        {
+            if(r == playerID) playerWinCount++;
+        }
+
+        if(playerWinCount == ((theGame.roundWins.length - 1) / 2 + 1))
+        {
+            //someone has won the game
+            io.emit('gameWinner', {
+                name: winner.name
+            });
+        }
+        else //no winner
+        {
+            let nextRound = info.nextRound;
+            theGame.rounds.push(nextRound);
+            roundNum = theGame.rounds.length - 1;
+            theGame.roundWins[roundNum] = 0; //new round
+
+            io.emit('roundWin', {
+                gameData: theGame
+            });
+        }
+
     })
 });

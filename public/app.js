@@ -4,26 +4,34 @@ const bestOf1 = document.getElementById('bestOf1');
 const bestOf3 = document.getElementById('bestOf3');
 let socket = io();
 
+const suitPositions =
+{
+  one: [[0, 0]],
+  two: [[0, -1], [0, 1]],
+  three: [[0, -1], [0, 0], [0, 1]],
+  four: [[-1, -1], [1, -1], [-1, 1], [1, 1]],
+  five: [[-1, -1], [1, -1], [0, 0], [-1, 1], [1, 1]]
+};
+
 let theGame;
 let currRound;
 
 bestOf1.addEventListener('click', () => {
-    theGame = new Game(1, 'player1', 'player2');
+    theGame = new Game(2, 'player1', 'player2');
     //currRound = new Round('player1', 'player2');
     socket.emit('startRound', {
         gameData: theGame,
-        roundNum: 1
     });
 });
 
 socket.on('startRound', (data) => {
-    console.log("starting round " + data.roundNum);
     bestOf1.style.display = "none";
     bestOf3.style.display = "none";
     theGame = data.gameData;
-    currRound = data.gameData.rounds[data.roundNum - 1];
+    currRound = theGame.rounds[theGame.rounds.length - 1];
+    console.log("starting round " + theGame.rounds.length);
     renderPile();
-    //clear and render hands
+    //render hands
     document.getElementById("p1Hand").innerHTML = "";
     document.getElementById("p2Hand").innerHTML = "";
     renderHand(0, "p1Hand");
@@ -37,13 +45,13 @@ socket.on('cardClick', (e) => {
     testValid(e);
 });
 
-socket.on('roundWin', (info) => {
-    let nextRound = new Round(theGame.player1Name, theGame.player2Name);
-    theGame.rounds.push(nextRound);
+socket.on('gameWinner', (win) => {
+    console.log(`${win.name} has won the game!`);
+});
 
+socket.on('roundWin', (info) => { //sent only if no one has won the game yet
     socket.emit('startRound', {
-        gameData: theGame,
-        roundNum: theGame.rounds.length
+        gameData: info.gameData
     });
 });
 
@@ -79,15 +87,6 @@ function renderCard(card, elem, replace, inHand)
 
     let cardClass = `${card.color} ${card.num} ${card.symbol} card`;
     if(inHand == 0 || inHand == 1) cardClass = cardClass + " hand" + inHand;
-
-    const suitPositions =
-    {
-      one: [[0, 0]],
-      two: [[0, -1], [0, 1]],
-      three: [[0, -1], [0, 0], [0, 1]],
-      four: [[-1, -1], [1, -1], [-1, 1], [1, 1]],
-      five: [[-1, -1], [1, -1], [0, 0], [-1, 1], [1, 1]]
-    };
 
     const createSuit = (suit) => (pos) => {
       const [ x, y ] = pos;
@@ -148,6 +147,7 @@ function replaceCard(color, num, symbol, plNum)
             return true;
         }
     }
+    console.log("could not find specified card!");
     return false;
 }
 
@@ -173,10 +173,14 @@ function testValid(eventObj)
         replaceCard(tcColor, tcNum, tcSymbol, tcPlayer); //draw a new card
         if(currRound.players[tcPlayer].playerHand.length == 0)//check if a player has won
         {
+            let nextRound = new Round(theGame.player1, theGame.player2);
             socket.emit('roundWin', {
-                player: tcPlayer
+                player: currRound.players[tcPlayer],
+                playerNum: tcPlayer,
+                gameData: theGame,
+                nextRound: nextRound
             });
-            console.log("WINNER!!");
+            console.log(`player ${tcPlayer} has won the round`);
         }
         let handLoc = tcPlayer == 0 ? 'p1Hand': 'p2Hand';
         renderHand(tcPlayer, handLoc); //rerender the hand
