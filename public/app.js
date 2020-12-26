@@ -4,7 +4,7 @@ const bestOf1 = document.getElementById('bestOf1');
 const bestOf3 = document.getElementById('bestOf3');
 let socket = io();
 
-const suitPositions =
+const suitPositions = 
 {
   one: [[0, 0]],
   two: [[0, -1], [0, 1]],
@@ -18,7 +18,6 @@ let currRound;
 
 bestOf1.addEventListener('click', () => {
     theGame = new Game(1, 'player1', 'player2');
-    //currRound = new Round('player1', 'player2');
     socket.emit('startRound', {
         gameData: theGame,
     });
@@ -32,13 +31,11 @@ socket.on('startRound', (data) => {
     renderRoundCounter(theGame.roundWins, "roundDisp");
     console.log("starting round " + theGame.rounds.length);
     renderPile();
-    //render hands
-    document.getElementById("p1Hand").innerHTML = "";
+    document.getElementById("p1Hand").innerHTML = ""; //render hands
     document.getElementById("p2Hand").innerHTML = "";
     renderHand(0, "p1Hand");
     renderHand(1, "p2Hand");
-    //attach click eventlisteners to each of the cards on the hand.
-    attachListeners(0);
+    attachListeners(0); //attach eventlisteners to each of the cards on the hand.
     attachListeners(1);
 });
 
@@ -85,7 +82,6 @@ function renderCard(card, elem, replace, inHand)
 {
     let element = document.getElementById(elem);
     if(replace) element.innerHTML = ""; //overwrite
-
     let cardClass = `${card.color} ${card.num} ${card.symbol} card`;
     if(inHand == 0 || inHand == 1) cardClass = cardClass + " hand" + inHand;
 
@@ -102,7 +98,6 @@ function renderCard(card, elem, replace, inHand)
           suitPositions[card.num].map(createSuit(card.symbol))
         )
       ]);
-
     element.appendChild(c);
 }
 
@@ -136,7 +131,6 @@ function renderRoundCounter(roundArr, elem, arrowElem = "arrow")
 {
     let display = document.getElementById(elem);
     let arrowDisp = document.getElementById(arrowElem);
-
     while (display.firstChild)
     {
         display.removeChild(display.firstChild);
@@ -167,7 +161,6 @@ function renderRoundCounter(roundArr, elem, arrowElem = "arrow")
         display.appendChild(circle);
         arrowDisp.appendChild(arrow);
     }
-
     document.getElementById("currRound").innerHTML = `Round ${theGame.rounds.length}`;
 }
 
@@ -232,10 +225,6 @@ function testValid(eventObj)
         let handLoc = tcPlayer == 0 ? 'p1Hand': 'p2Hand';
         renderHand(tcPlayer, handLoc); //rerender the hand
         attachListeners(tcPlayer);
-    }
-    else
-    {
-        console.log("cards do not match");
     }
 }
 
