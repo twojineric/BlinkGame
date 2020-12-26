@@ -17,7 +17,7 @@ let theGame;
 let currRound;
 
 bestOf1.addEventListener('click', () => {
-    theGame = new Game(2, 'player1', 'player2');
+    theGame = new Game(1, 'player1', 'player2');
     //currRound = new Round('player1', 'player2');
     socket.emit('startRound', {
         gameData: theGame,
@@ -29,8 +29,8 @@ socket.on('startRound', (data) => {
     bestOf3.style.display = "none";
     theGame = data.gameData;
     currRound = theGame.rounds[theGame.rounds.length - 1];
+    renderRoundCounter(theGame.roundWins, "roundDisp");
     console.log("starting round " + theGame.rounds.length);
-    document.getElementById("currRound").innerHTML = `Round ${theGame.rounds.length}`;
     renderPile();
     //render hands
     document.getElementById("p1Hand").innerHTML = "";
@@ -123,6 +123,52 @@ function renderPile()
 {
     renderCard(currRound.pile1, 'pile1', true, -1);
     renderCard(currRound.pile2, 'pile2', true, -1);
+}
+
+//renders the round counter at elem
+//the roundArr is the length of the max rounds playable, ie Bo5 should have len 5
+//a 1 means p1 won that round, same with p2.
+// 0 means the round is currently ongoing, -1 means that the round has not been played
+// an arrow is drawn under the round with value 0.
+
+//might add optional colors in the future
+function renderRoundCounter(roundArr, elem, arrowElem = "arrow")
+{
+    let display = document.getElementById(elem);
+    let arrowDisp = document.getElementById(arrowElem);
+
+    while (display.firstChild)
+    {
+        display.removeChild(display.firstChild);
+        arrowDisp.removeChild(arrowDisp.firstChild);
+    }
+
+    for(const round of roundArr)
+    {
+        let circle = document.createElement("span");
+        let arrow = document.createElement("span");
+
+        switch(round)
+        {
+            case 0:
+                circle.className = "step inProgress";
+                arrow.className = "yesArrow";
+                break;
+            case 1:
+            case 2:
+                circle.className = `step win${round}`;
+                arrow.className = "noArrow";
+                break;
+            default: //case: -1
+                circle.className = "step";
+                arrow.className = "noArrow";
+        }
+
+        display.appendChild(circle);
+        arrowDisp.appendChild(arrow);
+    }
+
+    document.getElementById("currRound").innerHTML = `Round ${theGame.rounds.length}`;
 }
 
 //finds the card with the specified properties in player #plNum's hand

@@ -65,6 +65,17 @@
     user-select: none;
 }
 
+#roundDisp
+{
+    text-align: center;
+    margin-top: 20px;
+}
+
+#arrow
+{
+    text-align: center;
+}
+
 .phand
 {
     margin: auto;
@@ -95,16 +106,48 @@
 }
 
 .step {
-  height: 15px;
-  width: 15px;
+  height: 14px;
+  width: 14px;
   margin: 0 2px;
-  background-color: cornflowerblue;
+  background-color: #BDC3C7;
   border: none;
   border-radius: 50%;
   display: inline-block;
   opacity: 0.5;
 }
 
-.step.active {
+.step.win1 {
+  background-color: #3498DB;
   opacity: 1;
+}
+
+.step.win2 {
+  background-color: #E74C3C;
+  opacity: 1;
+}
+
+.step.inProgress {
+  background-color: #909497;
+  opacity: 1;
+}
+
+.noArrow, .yesArrow {
+  height: 1px;
+  width: 14px;
+  margin: 0 2px;
+  background-color: #FFF;
+  border: none;
+  display: inline-block;
+  opacity: 0;
+}
+
+.yesArrow
+{
+  opacity: 1;
+  /* drawing the arrow */
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 10px solid black;
 }
