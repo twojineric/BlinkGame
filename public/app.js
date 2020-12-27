@@ -4,7 +4,7 @@ const bestOf1 = document.getElementById('bestOf1');
 const bestOf3 = document.getElementById('bestOf3');
 let socket = io();
 
-const suitPositions = 
+const suitPositions =
 {
   one: [[0, 0]],
   two: [[0, -1], [0, 1]],
@@ -228,8 +228,8 @@ function testValid(eventObj)
     }
 }
 
-const el = (tagName, attributes, children) => {
-  const element = document.createElement(tagName);
+const div = (attributes, children) => {
+  const element = document.createElement("div");
   if (attributes) {
     for (const attrName in attributes) {
       element.setAttribute(attrName, attributes[attrName]);
@@ -247,4 +247,3 @@ const el = (tagName, attributes, children) => {
   }
   return element;
 };
-const div = (a, c) => el('div', a, c);
