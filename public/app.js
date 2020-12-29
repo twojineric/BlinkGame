@@ -1,7 +1,5 @@
 import { Round } from './round.js';
 import { Game } from './game.js';
-const bestOf1 = document.getElementById('bestOf1');
-const bestOf3 = document.getElementById('bestOf3');
 let socket = io();
 
 const suitPositions =
@@ -15,26 +13,99 @@ const suitPositions =
 
 let theGame;
 let currRound;
+let modal = document.getElementById("myModal");
 
-bestOf1.addEventListener('click', () => {
-    theGame = new Game(1, 'player1', 'player2');
-    socket.emit('startRound', {
-        gameData: theGame,
+let localPlayer = document.getElementById('flip'); //checked if the player is p2.
+let rmcde;
+
+$( document ).ready(() => {
+
+    modal.style.display = "block";
+    $('#createRoom').on('click', () => {
+        let username = $('#nameCreate').val();
+        if(!username)
+        {
+          alert('Please enter your name.');
+          return;
+        }
+        modal.style.display = "none";
+        socket.emit('createRoom', {
+            name: username
+        });
+    });
+
+    $('#joinRoom').on('click', () => {
+        //currently no way to check if the room code is valid
+        let username = $('#nameJoin').val();
+        let roomCode = $('#roomCode').val();
+        if(!username || !roomCode)
+        {
+            alert('Please enter your name and roomcode!');
+            return;
+        }
+        modal.style.display = "none";
+        localPlayer.checked = true;
+        socket.emit('joinRoom', {
+            name: username,
+            roomCode: roomCode
+        });
+    });
+
+    $('#bestOf1').on('click', () => {
+        let p1Name = document.getElementById('localName').innerHTML; //should change later
+        let p2Name = document.getElementById('opponentName').innerHTML;
+        theGame = new Game(2, p1Name, p2Name);
+        socket.emit('startRound', {
+            gameData: theGame,
+            roomCode: rmcde
+        });
     });
 });
 
+socket.on('player1', (data) => {
+    document.getElementById('localName').innerHTML = data.name;
+    rmcde = data.roomCode;
+    console.log(`${data.name} has joined room ${rmcde}`);
+    document.getElementById('code').innerHTML = rmcde;
+});
+
+socket.on('player2', (data) => {
+    document.getElementById('opponentName').innerHTML = data.name;
+    rmcde = data.roomCode;
+    console.log(`${data.name} has joined room ${rmcde}`);
+    document.getElementById('code').innerHTML = rmcde;
+
+    if(!document.getElementById('localName').innerHTML) return;
+    else {
+        socket.emit('update', {
+            p1Name: document.getElementById('localName').innerHTML,
+            roomCode: data.roomCode
+        });
+    }
+});
+
+socket.on('update', (data) => {
+    document.getElementById('localName').innerHTML = data.p1Name;
+});
+
 socket.on('startRound', (data) => {
-    bestOf1.style.display = "none";
-    bestOf3.style.display = "none";
     theGame = data.gameData;
     currRound = theGame.rounds[theGame.rounds.length - 1];
     renderRoundCounter(theGame.roundWins, "roundDisp");
     console.log("starting round " + theGame.rounds.length);
     renderPile();
-    document.getElementById("p1Hand").innerHTML = ""; //render hands
-    document.getElementById("p2Hand").innerHTML = "";
-    renderHand(0, "p1Hand");
-    renderHand(1, "p2Hand");
+    document.getElementById("localHand").innerHTML = ""; //render hands
+    document.getElementById("opponentHand").innerHTML = "";
+    if(localPlayer.checked)
+    {
+        renderHand(1, "localHand");
+        renderHand(0, "opponentHand");
+    }
+    else
+    {
+        renderHand(0, "localHand");
+        renderHand(1, "opponentHand");
+    }
     attachListeners(0); //attach eventlisteners to each of the cards on the hand.
     attachListeners(1);
 });
@@ -49,13 +120,24 @@ socket.on('gameWinner', (win) => {
 
 socket.on('roundWin', (info) => { //sent only if no one has won the game yet
     socket.emit('startRound', {
-        gameData: info.gameData
+        gameData: info.gameData,
+        roomCode: rmcde
     });
 });
 
 function attachListeners(plNum)
 {
-    let pHand = (plNum == 0) ? document.getElementById("p1Hand") : document.getElementById("p2Hand"); //wtf going on here
+    let pHand;
+
+    if(localPlayer.checked) //if local player is p2
+    {
+        pHand = (plNum == 1) ? document.getElementById("localHand") : document.getElementById("opponentHand"); //wtf going on here
+    }
+    else
+    {
+        pHand = (plNum == 0) ? document.getElementById("localHand") : document.getElementById("opponentHand"); //wtf going on here
+    }
+
     let cardArr = pHand.childNodes;
 
     for(let cn of pHand.childNodes)
@@ -70,6 +152,7 @@ function attachListeners(plNum)
             socket.emit('cardClick', {
                 testCard: testCard,
                 mouseClick: mouseClick,
+                roomCode: rmcde
             });
         };
     }
@@ -106,7 +189,10 @@ function renderHand(plNum, elem)
 {
     let plyr = currRound.players[plNum];
     document.getElementById(elem).innerHTML = "";
-    document.getElementById(`p${plNum}Num`).innerHTML = plyr.playerDeck.length + plyr.playerHand.length;
+    let owner = localPlayer.checked == true ? 1 : 0;
+    let loc = plNum == owner ? 'local': 'opponent';
+    document.getElementById(`${loc}Num`).innerHTML = plyr.playerDeck.length + plyr.playerHand.length;
+    document.getElementById(`${loc}Name`).innerHTML = plyr.name;
     for(const c of plyr.playerHand)
     {
         renderCard(c, elem, false, plNum);
@@ -116,8 +202,8 @@ function renderHand(plNum, elem)
 //render both piles
 function renderPile()
 {
-    renderCard(currRound.pile1, 'pile1', true, -1);
-    renderCard(currRound.pile2, 'pile2', true, -1);
+    renderCard(currRound.pile1, 'pileL', true, -1);
+    renderCard(currRound.pile2, 'pileR', true, -1);
 }
 
 //renders the round counter at elem
@@ -201,7 +287,7 @@ function testValid(eventObj)
     let tcNum = testCard[1];
     let tcSymbol = testCard[2];
     let tcPlayer = testCard[4].substring(testCard[4].length - 1);
-    //left click sends to pile1, right click to p2
+    //left click sends to pile1 (pileL), right click to p2 (pileR)
     let pileCard = (mouseClick == 0) ? currRound.pile1: currRound.pile2;
 
     if(tcColor == pileCard.color || tcNum == pileCard.num || tcSymbol == pileCard.symbol)
@@ -218,11 +304,14 @@ function testValid(eventObj)
                 player: currRound.players[tcPlayer],
                 playerNum: tcPlayer,
                 gameData: theGame,
-                nextRound: nextRound
+                nextRound: nextRound,
+                roomCode: rmcde
             });
             console.log(`player ${tcPlayer} has won the round`);
         }
-        let handLoc = tcPlayer == 0 ? 'p1Hand': 'p2Hand';
+
+        let owner = localPlayer.checked == true ? 1 : 0;
+        let handLoc = tcPlayer == owner ? 'localHand': 'opponentHand';
         renderHand(tcPlayer, handLoc); //rerender the hand
         attachListeners(tcPlayer);
     }

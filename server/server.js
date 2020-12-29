@@ -9,9 +9,15 @@ let app = express();
 let server = http.createServer(app);
 let io = socketio(server);
 
+const letters = 'abcdefghijklmnopqrstuvwxyz';
+
 app.use(express.static(publicPath));
 
-server.listen(port, ()=> {
+app.get('/', function (req, res) {
+  res.sendFile(path.join(__dirname + '/../public/gameRoom.html'));
+});
+
+server.listen(port, () => {
     console.log(`Server is up on port ${port}.`)
 });
 
@@ -21,6 +27,31 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log('User disconnected.');
     });
+
+    socket.on('createRoom', (data) => {
+        let roomCode = genRoomCode(5);
+        socket.join(roomCode);
+        io.to(roomCode).emit('player1', {
+            name: data.name,
+            roomCode: roomCode
+        });
+    });
+
+    socket.on('joinRoom', async (data) => {
+        let members = await io.of("/").in(data.roomCode).allSockets();
+        if(true)
+        {
+            socket.join(data.roomCode);
+            io.to(data.roomCode).emit('player2', {
+                name: data.name,
+                roomCode: data.roomCode
+            });
+        }
+    });
+
+    socket.on('update', (data) => {
+        io.to(data.roomCode).emit('update', data);
+    })
 
     socket.on('startRound', (roundData) => {
     	io.emit('startRound', roundData);
@@ -65,3 +96,14 @@ io.on('connection', (socket) => {
 
     })
 });
+
+//creates a random string with length len using only lowercase a-z.
+function genRoomCode(len)
+{
+    let code = "";
+    for(let i = 0; i < len; i++)
+    {
+        code = code + letters.charAt(Math.random() * letters.length);
+    }
+    return code;
+}

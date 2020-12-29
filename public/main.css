@@ -1,3 +1,34 @@
+
+/* Modal Header */
+.modal-header {
+  padding: 2px 16px;
+  background-color: #5cb85c;
+  color: white;
+}
+
+/* Modal Body */
+.modal-body {padding: 2px 16px;}
+
+/* Modal Footer */
+.modal-footer {
+  padding: 2px 16px;
+  background-color: #5cb85c;
+  color: white;
+}
+
+/* Modal Content */
+.modal-content {
+  position: relative;
+  background-color: #fefefe;
+  margin: auto;
+  padding: 0;
+  border: 1px solid #888;
+  width: 80%;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+  animation-name: animatetop;
+  animation-duration: 0.4s
+}
+
 .card
 {
 	padding: 8px;
@@ -150,4 +181,15 @@
   border-left: 7px solid transparent;
   border-right: 7px solid transparent;
   border-bottom: 10px solid black;
+}
+
+#joinRoom, #createRoom
+{
+  text-align: center;
+  color: #FFF;
+  border-radius: 5px;
+  background-color: #3498DB;
+  font-size: 2em;
+  border: none;
+  cursor: pointer;
 }
