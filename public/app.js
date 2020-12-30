@@ -287,10 +287,11 @@ function testValid(eventObj)
     let tcNum = testCard[1];
     let tcSymbol = testCard[2];
     let tcPlayer = testCard[4].substring(testCard[4].length - 1);
+    let owner = localPlayer.checked == true ? 1 : 0;
     //left click sends to pile1 (pileL), right click to p2 (pileR)
     let pileCard = (mouseClick == 0) ? currRound.pile1: currRound.pile2;
 
-    if(tcColor == pileCard.color || tcNum == pileCard.num || tcSymbol == pileCard.symbol)
+    if((tcColor == pileCard.color || tcNum == pileCard.num || tcSymbol == pileCard.symbol) && tcPlayer == owner)
     {
         pileCard.color = tcColor;
         pileCard.num = tcNum;
@@ -310,7 +311,6 @@ function testValid(eventObj)
             console.log(`player ${tcPlayer} has won the round`);
         }
 
-        let owner = localPlayer.checked == true ? 1 : 0;
         let handLoc = tcPlayer == owner ? 'localHand': 'opponentHand';
         renderHand(tcPlayer, handLoc); //rerender the hand
         attachListeners(tcPlayer);
