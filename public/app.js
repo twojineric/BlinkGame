@@ -135,7 +135,7 @@ socket.on('startRound', (data) => {
     //startCountdown(3, countdown);
     gameboard.hidden = false;
     renderRoundCounter(theGame.roundWins, "roundDisp");
-    renderPile();
+    renderPiles();
     document.getElementById("localHand").textContent = ""; //render hands
     document.getElementById("opponentHand").textContent = "";
     if(isP2)
@@ -149,21 +149,17 @@ socket.on('startRound', (data) => {
         renderHand(1, "opponentHand");
     }
     attachListeners();
-
 });
 
-socket.on('cardClick', (e) => {
-    testValid(e);
-});
-
+//updates data.playerNum's hand and attaches listeners if applicable
 socket.on('updateGamestate', (data) => {
     theGame = data.gameData;
     currRound = theGame.rounds[theGame.rounds.length - 1];
     let owner = isP2 ? 1 : 0;
-    renderPile();
     let handLoc = data.playerNum == owner ? 'localHand': 'opponentHand';
+    renderPiles();
     renderHand(data.playerNum , handLoc); //rerender the hand
-    attachListeners(data.playerNum);
+    if(data.playerNum == owner) attachListeners();
 });
 
 socket.on('gameWinner', (win) => {
@@ -190,11 +186,45 @@ function attachListeners()
             if(testCard.length < 2) testCard = event.path[1].className.split(' ');
             if(testCard.length < 2) testCard = event.path[2].className.split(' ');
             let mouseClick = event.button;
-            socket.emit('cardClick', {
-                testCard: testCard,
-                mouseClick: mouseClick,
-                roomCode: rmcde
-            });
+
+            let tcColor = testCard[0];
+            let tcNum = testCard[1];
+            let tcSymbol = testCard[2];
+            let tcPlayer = testCard[4].substring(testCard[4].length - 1);
+            let pileCard; //left click sends to pile1 (pileL), right click to p2 (pileR)
+            if(mouseClick == 0) pileCard = currRound.pile1;
+            else if(mouseClick == 2) pileCard = currRound.pile2;
+            else {
+                console.log("mouse input invalid");
+                return;
+            }
+
+            if(true)//tcColor == pileCard.color || tcNum == pileCard.num || tcSymbol == pileCard.symbol)
+            {
+                //move clicked card to the respective pile
+                pileCard.color = tcColor;
+                pileCard.num = tcNum;
+                pileCard.symbol = tcSymbol;
+                replaceCard(tcColor, tcNum, tcSymbol, tcPlayer); //draw a new card
+                socket.emit('updateGamestate', {
+                    playerNum: tcPlayer,
+                    gameData: theGame,
+                    roomCode: rmcde
+                });
+
+                if(currRound.players[tcPlayer].playerHand.length == 0)//check if a player has won
+                {
+                    let nextRound = new Round(theGame.player1, theGame.player2);
+                    socket.emit('roundWin', {
+                        player: currRound.players[tcPlayer],
+                        playerNum: tcPlayer,
+                        gameData: theGame,
+                        nextRound: nextRound,
+                        roomCode: rmcde
+                    });
+                    console.log(`player ${tcPlayer} has won the round`);
+                }
+            }
         };
     }
 }
@@ -242,7 +272,7 @@ function renderHand(plNum, elem)
 }
 
 //render both piles
-function renderPile()
+function renderPiles()
 {
     renderCard(currRound.pile1, 'pileL', true, -1);
     renderCard(currRound.pile2, 'pileR', true, -1);
@@ -253,8 +283,6 @@ function renderPile()
 //a 1 means p1 won that round, same with p2.
 // 0 means the round is currently ongoing, -1 means that the round has not been played
 // an arrow is drawn under the round with value 0.
-
-//might add optional colors in the future
 function renderRoundCounter(roundArr, elem, arrowElem = "arrow")
 {
     let display = document.getElementById(elem);
@@ -317,54 +345,6 @@ function replaceCard(color, num, symbol, plNum)
     }
     console.log("could not find specified card!");
     return false;
-}
-
-//this function is called when one of the players clicks on a card
-//sends to the respective pile, and updates the players hand and the pile.
-function testValid(eventObj)
-{
-    let testCard = eventObj.testCard;
-    let mouseClick = eventObj.mouseClick;
-    let tcColor = testCard[0];
-    let tcNum = testCard[1];
-    let tcSymbol = testCard[2];
-    let tcPlayer = testCard[4].substring(testCard[4].length - 1);
-    let owner = isP2 ? 1 : 0;
-    //left click sends to pile1 (pileL), right click to p2 (pileR)
-    let pileCard = (mouseClick == 0) ? currRound.pile1: currRound.pile2;
-
-    if(tcColor == pileCard.color || tcNum == pileCard.num || tcSymbol == pileCard.symbol)
-    {
-        pileCard.color = tcColor;
-        pileCard.num = tcNum;
-        pileCard.symbol = tcSymbol;
-        renderPile(); //move clicked card to the respective pile
-        replaceCard(tcColor, tcNum, tcSymbol, tcPlayer); //draw a new card
-        if(currRound.players[tcPlayer].playerHand.length == 0)//check if a player has won
-        {
-            let nextRound = new Round(theGame.player1, theGame.player2);
-            socket.emit('roundWin', {
-                player: currRound.players[tcPlayer],
-                playerNum: tcPlayer,
-                gameData: theGame,
-                nextRound: nextRound,
-                roomCode: rmcde
-            });
-            console.log(`player ${tcPlayer} has won the round`);
-        }
-
-        let handLoc = tcPlayer == owner ? 'localHand': 'opponentHand';
-        renderHand(tcPlayer, handLoc); //rerender the hand
-        attachListeners(tcPlayer);
-
-        //update opponents screen
-        socket.emit('updateGamestate', {
-            player: currRound.players[tcPlayer],
-            playerNum: tcPlayer,
-            gameData: theGame,
-            roomCode: rmcde
-        });
-    }
 }
 
 //starts a full screen countdown at html elem display

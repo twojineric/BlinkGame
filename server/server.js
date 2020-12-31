@@ -57,10 +57,6 @@ io.on('connection', (socket) => {
     	io.to(roundData.roomCode).emit('startRound', roundData);
     });
 
-    socket.on('cardClick', (ev) => {
-        io.to(ev.roomCode).emit('cardClick', ev);
-    });
-
     socket.on('updateGamestate', (data) => {
         io.to(data.roomCode).emit('updateGamestate', data);
     })
