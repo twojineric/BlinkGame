@@ -20,11 +20,6 @@ class Game
             throw "err: Number of Rounds NaN";
             return;
         }
-        if(firstTo < 1)
-        {
-            throw "err: Positive integer number of rounds only";
-            return;
-        }
 
         this.player1 = new Player(pl1Name);
         this.player2 = new Player(pl2Name);

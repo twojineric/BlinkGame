@@ -15,7 +15,7 @@ let theGame;
 let currRound;
 let modal = document.getElementById("myModal");
 
-let localPlayer = document.getElementById('flip'); //checked if the player is p2.
+let isP2; //used for rendering obj
 let rmcde;
 
 $( document ).ready(() => {
@@ -44,17 +44,49 @@ $( document ).ready(() => {
             return;
         }
         modal.style.display = "none";
-        localPlayer.checked = true;
+        isP2 = true;
         socket.emit('joinRoom', {
             name: username,
             roomCode: roomCode
         });
     });
 
-    $('#bestOf1').on('click', () => {
+    $('#startGame').on('click', () => {
+        let roundStr = $('input[name=roundNumbers]:checked').val();
+        let numRounds;
+        if(roundStr == 'bestOfCustom')
+        {
+            numRounds = $('#bestOfCustomInput').val();
+
+            if(!numRounds)
+            {
+                alert("Please enter the number of rounds you wish to play");
+                return;
+            }
+            if(numRounds < 1)
+            {
+                alert("Positive Number of Rounds only");
+                return;
+            }
+            if(numRounds > 50)
+            {
+                alert("Too many Rounds");
+                return;
+            }
+            if(numRounds % 2 == 0)
+            {
+                alert("odd number of rounds only");
+                return;
+            }
+        }
+        else
+        {
+            numRounds = roundStr.charAt(roundStr.length - 1);
+        }
         let p1Name = document.getElementById('localName').innerHTML; //should change later
         let p2Name = document.getElementById('opponentName').innerHTML;
-        theGame = new Game(2, p1Name, p2Name);
+        numRounds = ((numRounds - 1) / 2) + 1; //Game constructor accepts a "firstTo" value
+        theGame = new Game(numRounds, p1Name, p2Name);
         socket.emit('startRound', {
             gameData: theGame,
             roomCode: rmcde
@@ -96,7 +128,7 @@ socket.on('startRound', (data) => {
     renderPile();
     document.getElementById("localHand").innerHTML = ""; //render hands
     document.getElementById("opponentHand").innerHTML = "";
-    if(localPlayer.checked)
+    if(isP2)
     {
         renderHand(1, "localHand");
         renderHand(0, "opponentHand");
@@ -125,21 +157,15 @@ socket.on('roundWin', (info) => { //sent only if no one has won the game yet
     });
 });
 
+//attach eventListeners to plNum's hand
 function attachListeners(plNum)
 {
     let pHand;
 
-    if(localPlayer.checked) //if local player is p2
-    {
-        pHand = (plNum == 1) ? document.getElementById("localHand") : document.getElementById("opponentHand"); //wtf going on here
-    }
-    else
-    {
-        pHand = (plNum == 0) ? document.getElementById("localHand") : document.getElementById("opponentHand"); //wtf going on here
-    }
+    if(isP2) pHand = (plNum == 1) ? document.getElementById("localHand") : document.getElementById("opponentHand");
+    else pHand = (plNum == 0) ? document.getElementById("localHand") : document.getElementById("opponentHand");
 
     let cardArr = pHand.childNodes;
-
     for(let cn of pHand.childNodes)
     {
         if(!cn.className.includes('hand')) continue;
@@ -168,6 +194,7 @@ function renderCard(card, elem, replace, inHand)
     let cardClass = `${card.color} ${card.num} ${card.symbol} card`;
     if(inHand == 0 || inHand == 1) cardClass = cardClass + " hand" + inHand;
 
+    //render card pips in the correct orientation
     const createSuit = (suit) => (pos) => {
       const [ x, y ] = pos;
       return div({
@@ -189,7 +216,7 @@ function renderHand(plNum, elem)
 {
     let plyr = currRound.players[plNum];
     document.getElementById(elem).innerHTML = "";
-    let owner = localPlayer.checked == true ? 1 : 0;
+    let owner = isP2 ? 1 : 0;
     let loc = plNum == owner ? 'local': 'opponent';
     document.getElementById(`${loc}Num`).innerHTML = plyr.playerDeck.length + plyr.playerHand.length;
     document.getElementById(`${loc}Name`).innerHTML = plyr.name;
@@ -287,7 +314,7 @@ function testValid(eventObj)
     let tcNum = testCard[1];
     let tcSymbol = testCard[2];
     let tcPlayer = testCard[4].substring(testCard[4].length - 1);
-    let owner = localPlayer.checked == true ? 1 : 0;
+    let owner = isP2 == true ? 1 : 0;
     //left click sends to pile1 (pileL), right click to p2 (pileR)
     let pileCard = (mouseClick == 0) ? currRound.pile1: currRound.pile2;
 

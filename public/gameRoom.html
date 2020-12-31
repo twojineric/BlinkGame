@@ -25,11 +25,19 @@
 
         </div>
 
-        <button type="button" name="bestOf1" id = "bestOf1">Best of 1</button>
-        <button type="button" name="bestOf3" id = "bestOf3">Best of 3</button>
+        <div>
+            <input type="radio" name="roundNumbers" value="bestOf1" id="bestOf1" checked>
+            <label for="bestOf1">Best of 1</label> <br>
+            <input type="radio" name="roundNumbers" value="bestOf3" id="bestOf3">
+            <label for="bestOf3">Best of 3</label> <br>
+            <input type="radio" name="roundNumbers" value="bestOf5" id="bestOf5">
+            <label for="bestOf5">Best of 5</label> <br>
+            <input type="radio" name="roundNumbers" value="bestOfCustom" id="bestOfCustom">
+            <label for="bestOfCustom">Custom Length</label>
+            <input type="number" name="" value="" id = "bestOfCustomInput"> <br>
 
-        <input type="checkbox" name="fl" value="" id="flip">
-        <label for="fl">Check here for flip</label>
+            <button type="button" name="startGame" id = "startGame"> Start Game </button> <br>
+        </div>
 
         <div id = "currRound" style="text-align:center;"> </div>
         <div id = "roundDisp"> </div>
