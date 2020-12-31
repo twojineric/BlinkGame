@@ -51,15 +51,19 @@ io.on('connection', (socket) => {
 
     socket.on('update', (data) => {
         io.to(data.roomCode).emit('update', data);
-    })
+    });
 
     socket.on('startRound', (roundData) => {
-    	io.emit('startRound', roundData);
+    	io.to(roundData.roomCode).emit('startRound', roundData);
     });
 
     socket.on('cardClick', (ev) => {
-        io.emit('cardClick', ev);
+        io.to(ev.roomCode).emit('cardClick', ev);
     });
+
+    socket.on('updateGamestate', (data) => {
+        io.to(data.roomCode).emit('updateGamestate', data);
+    })
 
     socket.on('roundWin', (info) => {
         let theGame = info.gameData;
@@ -78,18 +82,18 @@ io.on('connection', (socket) => {
         if(playerWinCount == ((theGame.roundWins.length - 1) / 2 + 1))
         {
             //someone has won the game
-            io.emit('gameWinner', {
+            io.to(info.roomCode).emit('gameWinner', {
                 name: winner.name
             });
         }
-        else //no winner
+        else //no winner yet
         {
             let nextRound = info.nextRound;
             theGame.rounds.push(nextRound);
             roundNum = theGame.rounds.length - 1;
             theGame.roundWins[roundNum] = 0; //new round
 
-            io.emit('roundWin', {
+            io.to(info.roomCode).emit('roundWin', {
                 gameData: theGame
             });
         }

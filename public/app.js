@@ -14,8 +14,11 @@ const suitPositions =
 let theGame;
 let currRound;
 let modal = document.getElementById("myModal");
+let gameboard = document.getElementById("gameboard");
 
-let isP2; //used for rendering obj
+let isP2; //used for rendering hands
+//the second person that joins the room is p2 and is in the 1st index of the player array in theGame obj.
+//this boolean ensures that the correct set of cards are displayed at the bottom of the screen.
 let rmcde;
 
 $( document ).ready(() => {
@@ -29,6 +32,7 @@ $( document ).ready(() => {
           return;
         }
         modal.style.display = "none";
+        isP2 = false;
         socket.emit('createRoom', {
             name: username
         });
@@ -78,13 +82,18 @@ $( document ).ready(() => {
                 alert("odd number of rounds only");
                 return;
             }
+            if(!Number.isInteger(Number.parseInt(numRounds)))
+            {
+                alert("integer number of rounds only!");
+                return;
+            }
         }
         else
         {
             numRounds = roundStr.charAt(roundStr.length - 1);
         }
-        let p1Name = document.getElementById('localName').innerHTML; //should change later
-        let p2Name = document.getElementById('opponentName').innerHTML;
+        let p1Name = document.getElementById('localName').textContent; //should change later
+        let p2Name = document.getElementById('opponentName').textContent;
         numRounds = ((numRounds - 1) / 2) + 1; //Game constructor accepts a "firstTo" value
         theGame = new Game(numRounds, p1Name, p2Name);
         socket.emit('startRound', {
@@ -95,39 +104,40 @@ $( document ).ready(() => {
 });
 
 socket.on('player1', (data) => {
-    document.getElementById('localName').innerHTML = data.name;
+    document.getElementById('localName').textContent = data.name;
     rmcde = data.roomCode;
     console.log(`${data.name} has joined room ${rmcde}`);
-    document.getElementById('code').innerHTML = rmcde;
+    document.getElementById('code').textContent = rmcde;
 });
 
 socket.on('player2', (data) => {
-    document.getElementById('opponentName').innerHTML = data.name;
+    document.getElementById('opponentName').textContent = data.name;
     rmcde = data.roomCode;
     console.log(`${data.name} has joined room ${rmcde}`);
-    document.getElementById('code').innerHTML = rmcde;
+    document.getElementById('code').textContent = rmcde;
 
-    if(!document.getElementById('localName').innerHTML) return;
+    if(!document.getElementById('localName').textContent) return;
     else {
         socket.emit('update', {
-            p1Name: document.getElementById('localName').innerHTML,
+            p1Name: document.getElementById('localName').textContent,
             roomCode: data.roomCode
         });
     }
 });
 
 socket.on('update', (data) => {
-    document.getElementById('localName').innerHTML = data.p1Name;
+    document.getElementById('localName').textContent = data.p1Name;
 });
 
 socket.on('startRound', (data) => {
     theGame = data.gameData;
     currRound = theGame.rounds[theGame.rounds.length - 1];
+    //startCountdown(3, countdown);
+    gameboard.hidden = false;
     renderRoundCounter(theGame.roundWins, "roundDisp");
-    console.log("starting round " + theGame.rounds.length);
     renderPile();
-    document.getElementById("localHand").innerHTML = ""; //render hands
-    document.getElementById("opponentHand").innerHTML = "";
+    document.getElementById("localHand").textContent = ""; //render hands
+    document.getElementById("opponentHand").textContent = "";
     if(isP2)
     {
         renderHand(1, "localHand");
@@ -138,12 +148,22 @@ socket.on('startRound', (data) => {
         renderHand(0, "localHand");
         renderHand(1, "opponentHand");
     }
-    attachListeners(0); //attach eventlisteners to each of the cards on the hand.
-    attachListeners(1);
+    attachListeners();
+
 });
 
 socket.on('cardClick', (e) => {
     testValid(e);
+});
+
+socket.on('updateGamestate', (data) => {
+    theGame = data.gameData;
+    currRound = theGame.rounds[theGame.rounds.length - 1];
+    let owner = isP2 ? 1 : 0;
+    renderPile();
+    let handLoc = data.playerNum == owner ? 'localHand': 'opponentHand';
+    renderHand(data.playerNum , handLoc); //rerender the hand
+    attachListeners(data.playerNum);
 });
 
 socket.on('gameWinner', (win) => {
@@ -157,21 +177,16 @@ socket.on('roundWin', (info) => { //sent only if no one has won the game yet
     });
 });
 
-//attach eventListeners to plNum's hand
-function attachListeners(plNum)
+//attach eventListeners to the cards on your (local) hand
+function attachListeners()
 {
-    let pHand;
-
-    if(isP2) pHand = (plNum == 1) ? document.getElementById("localHand") : document.getElementById("opponentHand");
-    else pHand = (plNum == 0) ? document.getElementById("localHand") : document.getElementById("opponentHand");
-
-    let cardArr = pHand.childNodes;
-    for(let cn of pHand.childNodes)
+    let cardArr = document.getElementById("localHand").childNodes;
+    for(let cn of cardArr)
     {
         if(!cn.className.includes('hand')) continue;
         cn.onmousedown = function(event) {
-            let testCard;
-            testCard = event.path[0].className.split(' ');
+            let testCard = event.path[0].className.split(' ');
+            //fixes cards not responding when the pip div elements were clicked
             if(testCard.length < 2) testCard = event.path[1].className.split(' ');
             if(testCard.length < 2) testCard = event.path[2].className.split(' ');
             let mouseClick = event.button;
@@ -218,8 +233,8 @@ function renderHand(plNum, elem)
     document.getElementById(elem).innerHTML = "";
     let owner = isP2 ? 1 : 0;
     let loc = plNum == owner ? 'local': 'opponent';
-    document.getElementById(`${loc}Num`).innerHTML = plyr.playerDeck.length + plyr.playerHand.length;
-    document.getElementById(`${loc}Name`).innerHTML = plyr.name;
+    document.getElementById(`${loc}Num`).textContent = plyr.playerDeck.length + plyr.playerHand.length;
+    document.getElementById(`${loc}Name`).textContent = plyr.name;
     for(const c of plyr.playerHand)
     {
         renderCard(c, elem, false, plNum);
@@ -274,7 +289,7 @@ function renderRoundCounter(roundArr, elem, arrowElem = "arrow")
         display.appendChild(circle);
         arrowDisp.appendChild(arrow);
     }
-    document.getElementById("currRound").innerHTML = `Round ${theGame.rounds.length}`;
+    document.getElementById("currRound").textContent = `Round ${theGame.rounds.length}`;
 }
 
 //finds the card with the specified properties in player #plNum's hand
@@ -314,11 +329,11 @@ function testValid(eventObj)
     let tcNum = testCard[1];
     let tcSymbol = testCard[2];
     let tcPlayer = testCard[4].substring(testCard[4].length - 1);
-    let owner = isP2 == true ? 1 : 0;
+    let owner = isP2 ? 1 : 0;
     //left click sends to pile1 (pileL), right click to p2 (pileR)
     let pileCard = (mouseClick == 0) ? currRound.pile1: currRound.pile2;
 
-    if((tcColor == pileCard.color || tcNum == pileCard.num || tcSymbol == pileCard.symbol) && tcPlayer == owner)
+    if(tcColor == pileCard.color || tcNum == pileCard.num || tcSymbol == pileCard.symbol)
     {
         pileCard.color = tcColor;
         pileCard.num = tcNum;
@@ -341,7 +356,27 @@ function testValid(eventObj)
         let handLoc = tcPlayer == owner ? 'localHand': 'opponentHand';
         renderHand(tcPlayer, handLoc); //rerender the hand
         attachListeners(tcPlayer);
+
+        //update opponents screen
+        socket.emit('updateGamestate', {
+            player: currRound.players[tcPlayer],
+            playerNum: tcPlayer,
+            gameData: theGame,
+            roomCode: rmcde
+        });
     }
+}
+
+//starts a full screen countdown at html elem display
+function startCountdown(seconds, disp)
+{
+    let timer = seconds;
+    let display = document.getElementById(disp);
+    setInterval(function () {
+        display.textContent = seconds;
+        timer--;
+        seconds = timer;
+    }, 1000);
 }
 
 const div = (attributes, children) => {
