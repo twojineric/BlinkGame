@@ -1,36 +1,27 @@
 
-/* Modal Header */
-.modal-header {
-  padding: 2px 16px;
-  background-color: #5cb85c;
-  color: white;
-}
-
-/* Modal Body */
-.modal-body {padding: 2px 16px;}
-
-/* Modal Footer */
-.modal-footer {
-  padding: 2px 16px;
-  background-color: #5cb85c;
-  color: white;
-}
-
 /* Modal Content */
 .modal-content {
   position: relative;
   background-color: #fefefe;
   margin: auto;
-  padding: 0;
+  padding: 70px 0;
+  text-align: center;
+  width: 40%;
   border: 1px solid #888;
-  width: 80%;
   box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
-  animation-name: animatetop;
-  animation-duration: 0.4s
 }
 
-.card
-{
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.card {
 	padding: 8px;
 	border: solid 1px #808080;
 	background-color: white;
@@ -42,34 +33,28 @@
     position: relative;
 }
 
-.card.yellow
-{
+.card.yellow {
     /* yes im aware */
     color: orange;
 }
 
-.card.blue
-{
+.card.blue {
     color: blue;
 }
 
-.card.red
-{
+.card.red {
     color: red;
 }
 
-.card.black
-{
+.card.black {
     color: black;
 }
 
-.card.green
-{
+.card.green {
     color: green;
 }
 
-.card.purple
-{
+.card.purple {
     color: purple;
 }
 
@@ -99,12 +84,14 @@
 #roundDisp
 {
     text-align: center;
-    margin-top: 20px;
+    margin: auto;
+    margin-top: 10px;
 }
 
 #arrow
 {
     text-align: center;
+    margin: 0;
 }
 
 .phand
@@ -136,51 +123,101 @@
     margin-right: 20px;
 }
 
+#player1Name {
+    height: 30px;
+    text-align: center;
+    margin: auto;
+    font-size: 2em;
+    font-weight: bold;
+    display: inline-block;
+    border-radius: 5px;
+    padding: 15px 0;
+    background-color: #3498DB;
+}
+
+#player2Name {
+    height: 30px;
+    text-align: center;
+    margin: auto;
+    font-size: 2em;
+    font-weight: bold;
+    display: inline-block;
+    border-radius: 5px;
+    padding: 15px 0;
+    background-color: #E74C3C;
+}
+
+#currRound {
+    text-align: center;
+    font-size: 1.5em;
+}
+
+#roundInfo {
+    flex: 1.5;
+}
+
+#topEdge{
+    clear: both;
+    height: 60px;
+    width: 50%;
+    margin: auto;
+    display: flex;
+}
+
+.edge-child {
+    flex: 1;
+    width: 100px;
+}
+
+.edge-child:first-child {
+    margin-right: 20px;
+}
+
 .step {
-  height: 14px;
-  width: 14px;
-  margin: 0 2px;
-  background-color: #BDC3C7;
-  border: none;
-  border-radius: 50%;
-  display: inline-block;
-  opacity: 0.5;
+    height: 14px;
+    width: 14px;
+    margin: 0 2px;
+    background-color: #BDC3C7;
+    border: none;
+    border-radius: 50%;
+    display: inline-block;
+    opacity: 0.5;
 }
 
 .step.win1 {
-  background-color: #3498DB;
-  opacity: 1;
+    background-color: #3498DB;
+    opacity: 1;
 }
 
 .step.win2 {
-  background-color: #E74C3C;
-  opacity: 1;
+    background-color: #E74C3C;
+    opacity: 1;
 }
 
 .step.inProgress {
-  background-color: #909497;
-  opacity: 1;
+    background-color: #909497;
+    opacity: 1;
 }
 
 .noArrow, .yesArrow {
-  height: 1px;
-  width: 14px;
-  margin: 0 2px;
-  background-color: #FFF;
-  border: none;
-  display: inline-block;
-  opacity: 0;
+    height: 1px;
+    width: 14px;
+    margin: 0 2px;
+    background-color: #FFF;
+    border: none;
+    display: inline-block;
+    opacity: 0;
 }
 
 .yesArrow
 {
   opacity: 1;
-  /* drawing the arrow */
   width: 0;
   height: 0;
+  font-size: 1em;
   border-left: 7px solid transparent;
   border-right: 7px solid transparent;
-  border-bottom: 10px solid black;
+  border-bottom: 9px solid black;
 }
 
 #joinRoom, #createRoom

@@ -9,23 +9,20 @@
     </head>
     <body oncontextmenu="return false;">
 
-        <!-- The Modal -->
-        <div id="myModal" class="modal">
+        <div id="topEdge">
+            <div id= "player1Name" class="edge-child">player 1 name</div>
+            <div id= "roundInfo" class="edge-child">
+                <div id="currRound"> </div>
+                <div id = "roundDisp"> </div>
+                <div id = "arrow">  </div>
+            </div>
+            <div id= "player2Name" class="edge-child">player 2 name</div>
+        </div> <br>
 
-          <!-- Modal content -->
-          <div class="modal-content">
-              <p>
-                <input type="text" name="name" value="" id='nameJoin' placeholder="name">
-                <input type="text" name="roomCode" value="" id="roomCode" placeholder = "room code">
-                <button type="button" name="joinRoom" id = "joinRoom"> Join Room </button> <br>
-                <input type="text" name="name" value="" id="nameCreate" placeholder= "name">
-                <button type="button" name="createRoom" id = "createRoom"> Create Room </button> <br>
-              </p>
-          </div>
+        <div id = "code"> </div> <br>
+        <div id = "countdown"> </div>
 
-        </div>
-
-        <div>
+        <div id = "optionsMenu" hidden>
             <input type="radio" name="roundNumbers" value="bestOf1" id="bestOf1" checked>
             <label for="bestOf1">Best of 1</label> <br>
             <input type="radio" name="roundNumbers" value="bestOf3" id="bestOf3">
@@ -34,22 +31,29 @@
             <label for="bestOf5">Best of 5</label> <br>
             <input type="radio" name="roundNumbers" value="bestOfCustom" id="bestOfCustom">
             <label for="bestOfCustom">Custom Length</label>
-            <input type="number" name="" value="" id = "bestOfCustomInput"> <br>
+            <input type="number" name="" value="" id = "bestOfCustomInput" min="1" max="19"> <br>
 
             <button type="button" name="startGame" id = "startGame"> Start Game </button> <br>
+        </div> <br>
+
+        <!-- The Modal popup window-->
+        <div id="myModal" class="modal">
+          <div class="modal-content">
+            <p>
+              BLINK! <br>
+            <input type="text" name="name" value="" id='nameJoin' placeholder="name" size="16" maxlength = "14">
+            <input type="text" name="roomCode" value="" id="roomCode" placeholder = "room code" size ="7" maxlength = "5">
+            <button type="button" name="joinRoom" id = "joinRoom"> Join Room </button> <br>
+            <input type="text" name="name" value="" id="nameCreate" placeholder= "name" size="16" maxlength = "14">
+            <button type="button" name="createRoom" id = "createRoom"> Create Room </button> <br>
+             </p>
+         </div>
         </div>
 
-        <div id = "currRound" style="text-align:center;"> </div>
-        <div id = "roundDisp"> </div>
-
-        <div id = "arrow">  </div>
-        <div id = "code"> </div>
-        <div id = "countdown"> </div>
         <div id="gameboard" hidden>
-
             <span id="opponentName"> Waiting for Player </span>
             <br>
-            Cards Left:<div id = "opponentNum"> </div>
+            Cards Left: <span id = "opponentNum"> </span>
             <div id="opponentHand" class="phand">  </div>
 
             <div class="discard-pile">
@@ -60,7 +64,7 @@
             <div id="localHand" class = "phand">  </div>
             <span id="localName"> Waiting for Player </span>
             <br>
-            Cards Left: <div id = "localNum"> </div>
+            Cards Left: <span id = "localNum"> </span>
         </div>
 
     </body>

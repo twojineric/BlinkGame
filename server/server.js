@@ -9,7 +9,7 @@ let app = express();
 let server = http.createServer(app);
 let io = socketio(server);
 
-const letters = 'abcdefghijklmnopqrstuvwxyz';
+const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 app.use(express.static(publicPath));
 
@@ -98,7 +98,7 @@ io.on('connection', (socket) => {
     })
 });
 
-//creates a random string with length len using only lowercase a-z.
+//creates a random string with length len using only uppercase a-z.
 function genRoomCode(len)
 {
     let code = "";

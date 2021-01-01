@@ -25,13 +25,14 @@ $( document ).ready(() => {
 
     modal.style.display = "block";
     $('#createRoom').on('click', () => {
-        let username = $('#nameCreate').val();
+        let username = $('#nameCreate').val().trim();
         if(!username)
         {
           alert('Please enter your name.');
           return;
         }
         modal.style.display = "none";
+        document.getElementById("optionsMenu").hidden = false;
         isP2 = false;
         socket.emit('createRoom', {
             name: username
@@ -40,14 +41,20 @@ $( document ).ready(() => {
 
     $('#joinRoom').on('click', () => {
         //currently no way to check if the room code is valid
-        let username = $('#nameJoin').val();
-        let roomCode = $('#roomCode').val();
+        let username = $('#nameJoin').val().trim();
+        let roomCode = $('#roomCode').val().trim();
         if(!username || !roomCode)
         {
             alert('Please enter your name and roomcode!');
             return;
         }
+        if(roomCode.length != 5)
+        {
+            alert("roomcode should be 5 characters long!");
+            return;
+        }
         modal.style.display = "none";
+        document.getElementById("optionsMenu").hidden = false;
         isP2 = true;
         socket.emit('joinRoom', {
             name: username,
@@ -61,29 +68,23 @@ $( document ).ready(() => {
         if(roundStr == 'bestOfCustom')
         {
             numRounds = $('#bestOfCustomInput').val();
-
-            if(!numRounds)
-            {
+            if(!numRounds) {
                 alert("Please enter the number of rounds you wish to play");
                 return;
             }
-            if(numRounds < 1)
-            {
+            if(numRounds < 1) {
                 alert("Positive Number of Rounds only");
                 return;
             }
-            if(numRounds > 50)
-            {
+            if(numRounds > 20) {
                 alert("Too many Rounds");
                 return;
             }
-            if(numRounds % 2 == 0)
-            {
+            if(numRounds % 2 == 0) {
                 alert("odd number of rounds only");
                 return;
             }
-            if(!Number.isInteger(Number.parseInt(numRounds)))
-            {
+            if(!Number.isInteger(Number.parseInt(numRounds))) {
                 alert("integer number of rounds only!");
                 return;
             }
@@ -92,8 +93,8 @@ $( document ).ready(() => {
         {
             numRounds = roundStr.charAt(roundStr.length - 1);
         }
-        let p1Name = document.getElementById('localName').textContent; //should change later
-        let p2Name = document.getElementById('opponentName').textContent;
+        let p1Name = document.getElementById('player1Name').textContent; //should change later
+        let p2Name = document.getElementById('player2Name').textContent;
         numRounds = ((numRounds - 1) / 2) + 1; //Game constructor accepts a "firstTo" value
         theGame = new Game(numRounds, p1Name, p2Name);
         socket.emit('startRound', {
@@ -104,29 +105,30 @@ $( document ).ready(() => {
 });
 
 socket.on('player1', (data) => {
-    document.getElementById('localName').textContent = data.name;
+    document.getElementById("player1Name").textContent = data.name;
     rmcde = data.roomCode;
     console.log(`${data.name} has joined room ${rmcde}`);
     document.getElementById('code').textContent = rmcde;
 });
 
 socket.on('player2', (data) => {
-    document.getElementById('opponentName').textContent = data.name;
+    document.getElementById("player2Name").textContent = data.name;
     rmcde = data.roomCode;
     console.log(`${data.name} has joined room ${rmcde}`);
     document.getElementById('code').textContent = rmcde;
 
-    if(!document.getElementById('localName').textContent) return;
+    console.log(document.getElementById('player1Name').textContent);
+    if(document.getElementById('player1Name').textContent == "player 1 name") return;
     else {
         socket.emit('update', {
-            p1Name: document.getElementById('localName').textContent,
+            p1Name: document.getElementById('player1Name').textContent,
             roomCode: data.roomCode
         });
     }
 });
 
 socket.on('update', (data) => {
-    document.getElementById('localName').textContent = data.p1Name;
+    document.getElementById("player1Name").textContent = data.p1Name;
 });
 
 socket.on('startRound', (data) => {
@@ -134,6 +136,9 @@ socket.on('startRound', (data) => {
     currRound = theGame.rounds[theGame.rounds.length - 1];
     //startCountdown(3, countdown);
     gameboard.hidden = false;
+    //these names are possibly redundant
+    document.getElementById("player1Name").textContent = theGame.player1.name;
+    document.getElementById("player2Name").textContent = theGame.player2.name;
     renderRoundCounter(theGame.roundWins, "roundDisp");
     renderPiles();
     document.getElementById("localHand").textContent = ""; //render hands
@@ -142,11 +147,15 @@ socket.on('startRound', (data) => {
     {
         renderHand(1, "localHand");
         renderHand(0, "opponentHand");
+        document.getElementById("localName").textContent = theGame.player2.name;
+        document.getElementById("opponentName").textContent = theGame.player1.name;
     }
     else
     {
         renderHand(0, "localHand");
         renderHand(1, "opponentHand");
+        document.getElementById("localName").textContent = theGame.player1.name;
+        document.getElementById("opponentName").textContent = theGame.player2.name;
     }
     attachListeners();
 });
