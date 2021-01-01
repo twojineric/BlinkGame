@@ -164,6 +164,8 @@ socket.on('updateGamestate', (data) => {
 
 socket.on('gameWinner', (win) => {
     console.log(`${win.name} has won the game!`);
+    theGame = win.gameData;
+    renderRoundCounter(theGame.roundWins, "roundDisp");
 });
 
 socket.on('roundWin', (info) => { //sent only if no one has won the game yet
@@ -313,7 +315,6 @@ function renderRoundCounter(roundArr, elem, arrowElem = "arrow")
                 circle.className = "step";
                 arrow.className = "noArrow";
         }
-
         display.appendChild(circle);
         arrowDisp.appendChild(arrow);
     }

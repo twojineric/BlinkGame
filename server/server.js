@@ -79,7 +79,8 @@ io.on('connection', (socket) => {
         {
             //someone has won the game
             io.to(info.roomCode).emit('gameWinner', {
-                name: winner.name
+                name: winner.name,
+                gameData: theGame
             });
         }
         else //no winner yet
