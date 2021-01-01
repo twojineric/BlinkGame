@@ -199,7 +199,7 @@ function attachListeners()
                 return;
             }
 
-            if(true)//tcColor == pileCard.color || tcNum == pileCard.num || tcSymbol == pileCard.symbol)
+            if(tcColor == pileCard.color || tcNum == pileCard.num || tcSymbol == pileCard.symbol)
             {
                 //move clicked card to the respective pile
                 pileCard.color = tcColor;
