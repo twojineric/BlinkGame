@@ -94,8 +94,7 @@ io.on('connection', (socket) => {
                 gameData: theGame
             });
         }
-
-    })
+    });
 });
 
 //creates a random string with length len using only uppercase a-z.

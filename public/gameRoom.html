@@ -6,6 +6,8 @@
         <link rel="stylesheet" href="main.css">
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
         <script src="/socket.io/socket.io.js"></script>
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@700&display=swap" rel="stylesheet">
     </head>
     <body oncontextmenu="return false;">
 
@@ -40,13 +42,13 @@
         <div id="myModal" class="modal">
           <div class="modal-content">
             <p>
-              BLINK! <br>
+              <div id = "blink">BLINK!</div>
             <input type="text" name="name" value="" id='nameJoin' placeholder="name" size="16" maxlength = "14">
-            <input type="text" name="roomCode" value="" id="roomCode" placeholder = "room code" size ="7" maxlength = "5">
+            <input type="text" name="roomCode" value="" id="roomCode" style="text-transform: uppercase" placeholder = "code" size ="7" maxlength = "5">
             <button type="button" name="joinRoom" id = "joinRoom"> Join Room </button> <br>
             <input type="text" name="name" value="" id="nameCreate" placeholder= "name" size="16" maxlength = "14">
             <button type="button" name="createRoom" id = "createRoom"> Create Room </button> <br>
-             </p>
+            </p>
          </div>
         </div>
 

@@ -17,13 +17,14 @@ let modal = document.getElementById("myModal");
 let gameboard = document.getElementById("gameboard");
 
 let isP2; //used for rendering hands
-//the second person that joins the room is p2 and is in the 1st index of the player array in theGame obj.
-//this boolean ensures that the correct set of cards are displayed at the bottom of the screen.
+//the second person that joins the room is p2 in theGame obj.
+//this boolean ensures that the correct set of cards are displayed at the bottom of the screen for each player
 let rmcde;
 
 $( document ).ready(() => {
 
     modal.style.display = "block";
+    document.getElementById("topEdge").style.display = "none";
     $('#createRoom').on('click', () => {
         let username = $('#nameCreate').val().trim();
         if(!username)
@@ -33,6 +34,7 @@ $( document ).ready(() => {
         }
         modal.style.display = "none";
         document.getElementById("optionsMenu").hidden = false;
+        document.getElementById("topEdge").style.display = "flex";
         isP2 = false;
         socket.emit('createRoom', {
             name: username
@@ -55,6 +57,7 @@ $( document ).ready(() => {
         }
         modal.style.display = "none";
         document.getElementById("optionsMenu").hidden = false;
+        document.getElementById("topEdge").style.display = "flex";
         isP2 = true;
         socket.emit('joinRoom', {
             name: username,
@@ -95,6 +98,7 @@ $( document ).ready(() => {
         }
         let p1Name = document.getElementById('player1Name').textContent; //should change later
         let p2Name = document.getElementById('player2Name').textContent;
+        document.getElementById("optionsMenu").hidden = true;
         numRounds = ((numRounds - 1) / 2) + 1; //Game constructor accepts a "firstTo" value
         theGame = new Game(numRounds, p1Name, p2Name);
         socket.emit('startRound', {
@@ -108,14 +112,14 @@ socket.on('player1', (data) => {
     document.getElementById("player1Name").textContent = data.name;
     rmcde = data.roomCode;
     console.log(`${data.name} has joined room ${rmcde}`);
-    document.getElementById('code').textContent = rmcde;
+    document.getElementById('code').textContent = "Room Code: " + rmcde;
 });
 
 socket.on('player2', (data) => {
     document.getElementById("player2Name").textContent = data.name;
     rmcde = data.roomCode;
     console.log(`${data.name} has joined room ${rmcde}`);
-    document.getElementById('code').textContent = rmcde;
+    document.getElementById('code').textContent = "Room Code: " + rmcde;
 
     console.log(document.getElementById('player1Name').textContent);
     if(document.getElementById('player1Name').textContent == "player 1 name") return;

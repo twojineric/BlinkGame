@@ -157,11 +157,22 @@ input[type=number] {
 }
 
 #topEdge{
+    font-family: 'Noto Sans', sans-serif;
     clear: both;
     height: 60px;
     width: 50%;
     margin: auto;
     display: flex;
+}
+
+#code {
+    font-family: 'Noto Sans', sans-serif;
+    font-size: 1.5em;
+}
+
+#blink {
+    font-family: 'Noto Sans', sans-serif;
+    font-size: 2.5em;
 }
 
 .edge-child {
