@@ -1,5 +1,5 @@
-import { Round } from './round.js';
-import { Game } from './game.js';
+import { Round } from './helpers/round.js';
+import { Game } from './helpers/game.js';
 let socket = io();
 
 const suitPositions =
@@ -17,8 +17,8 @@ let modal = document.getElementById("myModal");
 let gameboard = document.getElementById("gameboard");
 
 let isP2; //used for rendering hands
-//the second person that joins the room is p2 in theGame obj.
-//this boolean ensures that the correct set of cards are displayed at the bottom of the screen for each player
+//the second person that joins the room is "player2" in theGame obj.
+//boolean ensures that the correct set of cards are displayed at the bottom of the screen for each player
 let rmcde;
 
 $( document ).ready(() => {
@@ -34,6 +34,7 @@ $( document ).ready(() => {
         }
         modal.style.display = "none";
         document.getElementById("optionsMenu").hidden = false;
+        document.getElementById("startGame").hidden = false;
         document.getElementById("topEdge").style.display = "flex";
         isP2 = false;
         socket.emit('createRoom', {
@@ -44,7 +45,7 @@ $( document ).ready(() => {
     $('#joinRoom').on('click', () => {
         //currently no way to check if the room code is valid
         let username = $('#nameJoin').val().trim();
-        let roomCode = $('#roomCode').val().trim();
+        let roomCode = $('#roomCode').val().trim().toUpperCase();
         if(!username || !roomCode)
         {
             alert('Please enter your name and roomcode!');
@@ -56,54 +57,13 @@ $( document ).ready(() => {
             return;
         }
         modal.style.display = "none";
-        document.getElementById("optionsMenu").hidden = false;
+        document.getElementById("optionsMenu").hidden = true; //only the host (p1) determines settings
+        document.getElementById("p2Only").hidden = false;
         document.getElementById("topEdge").style.display = "flex";
         isP2 = true;
         socket.emit('joinRoom', {
             name: username,
             roomCode: roomCode
-        });
-    });
-
-    $('#startGame').on('click', () => {
-        let roundStr = $('input[name=roundNumbers]:checked').val();
-        let numRounds;
-        if(roundStr == 'bestOfCustom')
-        {
-            numRounds = $('#bestOfCustomInput').val();
-            if(!numRounds) {
-                alert("Please enter the number of rounds you wish to play");
-                return;
-            }
-            if(numRounds < 1) {
-                alert("Positive Number of Rounds only");
-                return;
-            }
-            if(numRounds > 20) {
-                alert("Too many Rounds");
-                return;
-            }
-            if(numRounds % 2 == 0) {
-                alert("odd number of rounds only");
-                return;
-            }
-            if(!Number.isInteger(Number.parseInt(numRounds))) {
-                alert("integer number of rounds only!");
-                return;
-            }
-        }
-        else
-        {
-            numRounds = roundStr.charAt(roundStr.length - 1);
-        }
-        let p1Name = document.getElementById('player1Name').textContent; //should change later
-        let p2Name = document.getElementById('player2Name').textContent;
-        document.getElementById("optionsMenu").hidden = true;
-        numRounds = ((numRounds - 1) / 2) + 1; //Game constructor accepts a "firstTo" value
-        theGame = new Game(numRounds, p1Name, p2Name);
-        socket.emit('startRound', {
-            gameData: theGame,
-            roomCode: rmcde
         });
     });
 });
@@ -121,8 +81,7 @@ socket.on('player2', (data) => {
     console.log(`${data.name} has joined room ${rmcde}`);
     document.getElementById('code').textContent = "Room Code: " + rmcde;
 
-    console.log(document.getElementById('player1Name').textContent);
-    if(document.getElementById('player1Name').textContent == "player 1 name") return;
+    if(document.getElementById('player1Name').textContent == "player 1 name") return; //better fix than this
     else {
         socket.emit('update', {
             p1Name: document.getElementById('player1Name').textContent,
@@ -135,11 +94,72 @@ socket.on('update', (data) => {
     document.getElementById("player1Name").textContent = data.p1Name;
 });
 
+$('#startGame').on('click', () => {
+    //add a check to see if there are 2 players
+    let roundStr = $('input[name=roundNumbers]:checked').val();
+    let numRounds;
+    if(roundStr == 'bestOfCustom')
+    {
+        numRounds = $('#bestOfCustomInput').val();
+        if(!numRounds) {
+            alert("Please enter the number of rounds you wish to play");
+            return;
+        }
+        if(numRounds < 1) {
+            alert("Positive Number of Rounds only");
+            return;
+        }
+        if(numRounds > 20) {
+            alert("Too many Rounds");
+            return;
+        }
+        if(numRounds % 2 == 0) {
+            alert("odd number of rounds only");
+            return;
+        }
+        if(!Number.isInteger(Number.parseInt(numRounds))) {
+            alert("integer number of rounds only!");
+            return;
+        }
+    }
+    else
+    {
+        numRounds = roundStr.charAt(roundStr.length - 1);
+    }
+
+    document.getElementById("optionsMenu").hidden = true;
+    document.getElementById("p1Options").textContent = `Best of ${numRounds}`;
+    socket.emit('p1Ready', {
+        numRounds: numRounds,
+        roomCode: rmcde
+    });
+});
+
+socket.on('p1Ready', (round) => {
+    if(isP2)
+    {
+        document.getElementById("p2Options").textContent = `Best of ${round.numRounds}`;
+        $('#readyUp').on('click', () => {
+            let p1Name = document.getElementById('player1Name').textContent; //should change later
+            let p2Name = document.getElementById('player2Name').textContent;
+            let numRounds = ((round.numRounds - 1) / 2) + 1; //Game constructor accepts a "firstTo" value
+            theGame = new Game(numRounds, p1Name, p2Name);
+            socket.emit('startRound', {
+                gameData: theGame,
+                roomCode: rmcde
+            });
+        });
+    }
+});
+
 socket.on('startRound', (data) => {
     theGame = data.gameData;
     currRound = theGame.rounds[theGame.rounds.length - 1];
     //startCountdown(3, countdown);
     gameboard.hidden = false;
+    document.getElementById("optionsMenu").hidden = true; //redundant
+    document.getElementById("p2Only").hidden = true;
+    document.getElementById("startGame").hidden = true;
     //these names are possibly redundant
     document.getElementById("player1Name").textContent = theGame.player1.name;
     document.getElementById("player2Name").textContent = theGame.player2.name;

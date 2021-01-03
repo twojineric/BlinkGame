@@ -24,7 +24,12 @@
         <div id = "code"> </div> <br>
         <div id = "countdown"> </div>
 
-        <div id = "optionsMenu" hidden>
+        <div id="p2Only" hidden>
+            <div id = "p2Options">P1 is configuring the game</div>
+            <button type="button" name="readyUp" id="readyUp">Ready Up</button>
+        </div>
+
+        <div id = "optionsMenu" class = "p1Only" hidden>
             <input type="radio" name="roundNumbers" value="bestOf1" id="bestOf1" checked>
             <label for="bestOf1">Best of 1</label> <br>
             <input type="radio" name="roundNumbers" value="bestOf3" id="bestOf3">
@@ -33,10 +38,11 @@
             <label for="bestOf5">Best of 5</label> <br>
             <input type="radio" name="roundNumbers" value="bestOfCustom" id="bestOfCustom">
             <label for="bestOfCustom">Custom Length</label>
-            <input type="number" name="" value="" id = "bestOfCustomInput" min="1" max="19"> <br>
-
-            <button type="button" name="startGame" id = "startGame"> Start Game </button> <br>
+            <input type="number" name="" value="" id = "bestOfCustomInput" min="1" max="19">
         </div> <br>
+
+        <div class="p1Only" id = "p1Options"></div>
+        <button type="button" name="startGame" class = 'p1Only' id = "startGame" hidden> Ready Up </button> <br>
 
         <!-- The Modal popup window-->
         <div id="myModal" class="modal">
