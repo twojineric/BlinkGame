@@ -95,6 +95,19 @@ input[type=number] {
     margin: 0;
 }
 
+#p1Ready, #p2Ready
+{
+    text-align: center;
+    border-radius: 5px;
+    font-size: 2em;
+    border: 2px black;
+    cursor: pointer;
+}
+
+.down {
+    background-color: #27AE60;
+}
+
 .phand
 {
     margin: auto;

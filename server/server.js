@@ -53,8 +53,12 @@ io.on('connection', (socket) => {
         io.to(data.roomCode).emit('update', data);
     });
 
-    socket.on('p1Ready', (data) => {
-        io.to(data.roomCode).emit('p1Ready', data);
+    socket.on('options', (data) => {
+        io.to(data.roomCode).emit('options', data);
+    })
+
+    socket.on('readyUp', (data) => {
+        io.to(data.roomCode).emit('readyUp', data);
     })
 
     socket.on('startRound', (roundData) => {

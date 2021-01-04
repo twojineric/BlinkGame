@@ -43,7 +43,7 @@ $( document ).ready(() => {
     });
 
     $('#joinRoom').on('click', () => {
-        //currently no way to check if the room code is valid
+        //implement a way to check if the room code is valid
         let username = $('#nameJoin').val().trim();
         let roomCode = $('#roomCode').val().trim().toUpperCase();
         if(!username || !roomCode)
@@ -57,8 +57,7 @@ $( document ).ready(() => {
             return;
         }
         modal.style.display = "none";
-        document.getElementById("optionsMenu").hidden = true; //only the host (p1) determines settings
-        document.getElementById("p2Only").hidden = false;
+        document.getElementById("p2Options").hidden = false;
         document.getElementById("topEdge").style.display = "flex";
         isP2 = true;
         socket.emit('joinRoom', {
@@ -81,7 +80,11 @@ socket.on('player2', (data) => {
     console.log(`${data.name} has joined room ${rmcde}`);
     document.getElementById('code').textContent = "Room Code: " + rmcde;
 
-    if(document.getElementById('player1Name').textContent == "player 1 name") return; //better fix than this
+    if(document.getElementById('player1Name').textContent.length == 0)
+    {
+        console.log("something went wrong, you do not have a player 1!!"); //not true, remove
+        return; //temp fix
+    }
     else {
         socket.emit('update', {
             p1Name: document.getElementById('player1Name').textContent,
@@ -95,7 +98,11 @@ socket.on('update', (data) => {
 });
 
 $('#startGame').on('click', () => {
-    //add a check to see if there are 2 players
+    if(document.getElementById('player2Name').textContent.length == 0)
+    {
+        alert("need 2 players to start the game!");
+        return; //temp fix, check if there are 2 players
+    }
     let roundStr = $('input[name=roundNumbers]:checked').val();
     let numRounds;
     if(roundStr == 'bestOfCustom')
@@ -126,28 +133,62 @@ $('#startGame').on('click', () => {
     {
         numRounds = roundStr.charAt(roundStr.length - 1);
     }
-
     document.getElementById("optionsMenu").hidden = true;
-    document.getElementById("p1Options").textContent = `Best of ${numRounds}`;
-    socket.emit('p1Ready', {
+    socket.emit('options', {
         numRounds: numRounds,
         roomCode: rmcde
     });
 });
 
-socket.on('p1Ready', (round) => {
+socket.on('options', (round) => {
     if(isP2)
     {
         document.getElementById("p2Options").textContent = `Best of ${round.numRounds}`;
-        $('#readyUp').on('click', () => {
+        document.getElementById("p2Ready").hidden = false;
+    }
+    else
+    {
+        document.getElementById("p1Options").textContent = `Best of ${round.numRounds}`;
+        document.getElementById("p1Ready").hidden = false;
+    }
+
+    $('#p1Ready').one('click', () => {
+        $('#p1Ready').addClass("down");
+        $('#p1Ready').text("Ready!");
+        socket.emit('readyUp', {
+            user: 1,
+            numRounds: round.numRounds,
+            createGame: true,
+            roomCode: rmcde
+        });
+    });
+
+    $('#p2Ready').one('click', () => {
+        $('#p2Ready').addClass("down");
+        $('#p2Ready').text("Ready!");
+        socket.emit('readyUp', {
+            user: 2,
+            numRounds: round.numRounds,
+            createGame: true,
+            roomCode: rmcde
+        });
+    });
+});
+
+socket.on('readyUp', (info) => {
+    if(($('#p2Ready').hasClass("down") && info.user == 1 && isP2) ||
+    ($('#p1Ready').hasClass("down") && info.user == 2 && !isP2))
+    {
+        if(info.createGame)
+        {
             let p1Name = document.getElementById('player1Name').textContent; //should change later
             let p2Name = document.getElementById('player2Name').textContent;
-            let numRounds = ((round.numRounds - 1) / 2) + 1; //Game constructor accepts a "firstTo" value
+            let numRounds = ((info.numRounds - 1) / 2) + 1; //Game constructor accepts a "firstTo" value
             theGame = new Game(numRounds, p1Name, p2Name);
-            socket.emit('startRound', {
-                gameData: theGame,
-                roomCode: rmcde
-            });
+        }
+        socket.emit('startRound', {
+            gameData: theGame,
+            roomCode: rmcde
         });
     }
 });
@@ -155,14 +196,19 @@ socket.on('p1Ready', (round) => {
 socket.on('startRound', (data) => {
     theGame = data.gameData;
     currRound = theGame.rounds[theGame.rounds.length - 1];
-    //startCountdown(3, countdown);
-    gameboard.hidden = false;
+    document.getElementById("p1Ready").hidden = true;
+    document.getElementById("p2Ready").hidden = true;
+    $('#p1Ready').removeClass("down");
+    $('#p2Ready').removeClass("down");
+    $('#p1Ready').text("Ready Up");
+    $('#p2Ready').text("Ready Up");
     document.getElementById("optionsMenu").hidden = true; //redundant
-    document.getElementById("p2Only").hidden = true;
     document.getElementById("startGame").hidden = true;
     //these names are possibly redundant
     document.getElementById("player1Name").textContent = theGame.player1.name;
     document.getElementById("player2Name").textContent = theGame.player2.name;
+    gameboard.hidden = false;
+    //startCountdown(3, countdown);
     renderRoundCounter(theGame.roundWins, "roundDisp");
     renderPiles();
     document.getElementById("localHand").textContent = ""; //render hands
@@ -202,9 +248,32 @@ socket.on('gameWinner', (win) => {
 });
 
 socket.on('roundWin', (info) => { //sent only if no one has won the game yet
-    socket.emit('startRound', {
-        gameData: info.gameData,
-        roomCode: rmcde
+
+    if(isP2) document.getElementById("p2Ready").hidden = false;
+    else document.getElementById("p1Ready").hidden = false;
+
+    theGame = info.gameData;
+
+    $('#p1Ready').on('click', () => {
+        $('#p1Ready').addClass("down");
+        $('#p1Ready').text("Ready!");
+        socket.emit('readyUp', {
+            user: 1,
+            createGame: false,
+            gameData: info.gameData,
+            roomCode: rmcde
+        });
+    });
+
+    $('#p2Ready').on('click', () => {
+        $('#p2Ready').addClass("down");
+        $('#p2Ready').text("Ready!");
+        socket.emit('readyUp', {
+            user: 2,
+            createGame: false,
+            gameData: info.gameData,
+            roomCode: rmcde
+        });
     });
 });
 
