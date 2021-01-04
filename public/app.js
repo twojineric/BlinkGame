@@ -13,13 +13,12 @@ const suitPositions =
 
 let theGame;
 let currRound;
+let rmcde;
 let modal = document.getElementById("myModal");
 let gameboard = document.getElementById("gameboard");
 
 let isP2; //used for rendering hands
-//the second person that joins the room is "player2" in theGame obj.
 //boolean ensures that the correct set of cards are displayed at the bottom of the screen for each player
-let rmcde;
 
 $( document ).ready(() => {
 
@@ -69,6 +68,8 @@ $( document ).ready(() => {
 
 socket.on('player1', (data) => {
     document.getElementById("player1Name").textContent = data.name;
+    document.getElementById('message').hidden = false;
+    $('#message').text('Waiting for player 2');
     rmcde = data.roomCode;
     console.log(`${data.name} has joined room ${rmcde}`);
     document.getElementById('code').textContent = "Room Code: " + rmcde;
@@ -76,16 +77,14 @@ socket.on('player1', (data) => {
 
 socket.on('player2', (data) => {
     document.getElementById("player2Name").textContent = data.name;
+    document.getElementById('message').hidden = true;
     rmcde = data.roomCode;
     console.log(`${data.name} has joined room ${rmcde}`);
     document.getElementById('code').textContent = "Room Code: " + rmcde;
 
-    if(document.getElementById('player1Name').textContent.length == 0)
+    if(document.getElementById('player1Name').textContent.length == 0) return; //temp fix
+    else
     {
-        console.log("something went wrong, you do not have a player 1!!"); //not true, remove
-        return; //temp fix
-    }
-    else {
         socket.emit('update', {
             p1Name: document.getElementById('player1Name').textContent,
             roomCode: data.roomCode
@@ -202,18 +201,15 @@ socket.on('startRound', (data) => {
     $('#p2Ready').removeClass("down");
     $('#p1Ready').text("Ready Up");
     $('#p2Ready').text("Ready Up");
-    document.getElementById("optionsMenu").hidden = true; //redundant
     document.getElementById("startGame").hidden = true;
-    //these names are possibly redundant
-    document.getElementById("player1Name").textContent = theGame.player1.name;
-    document.getElementById("player2Name").textContent = theGame.player2.name;
+    document.getElementById('message').hidden = true;
     gameboard.hidden = false;
-    //startCountdown(3, countdown);
+    //startCountdown(3, MISSING);
     renderRoundCounter(theGame.roundWins, "roundDisp");
     renderPiles();
-    document.getElementById("localHand").textContent = ""; //render hands
+    document.getElementById("localHand").textContent = "";
     document.getElementById("opponentHand").textContent = "";
-    if(isP2)
+    if(isP2) //render hands
     {
         renderHand(1, "localHand");
         renderHand(0, "opponentHand");
@@ -253,6 +249,9 @@ socket.on('roundWin', (info) => { //sent only if no one has won the game yet
     else document.getElementById("p1Ready").hidden = false;
 
     theGame = info.gameData;
+    renderRoundCounter(theGame.roundWins, "roundDisp");
+    document.getElementById('message').hidden = false;
+    $('#message').text(`${info.name} has won round ${theGame.rounds.length - 1}!`);
 
     $('#p1Ready').on('click', () => {
         $('#p1Ready').addClass("down");
@@ -435,19 +434,10 @@ function replaceCard(color, num, symbol, plNum)
         if(c.symbol == symbol && c.color == color && c.num == num)
         {
             let cardFromDeck = currRound.players[plNum].playerDeck.pop();
-            if(!cardFromDeck) //card doesnt exist - deck is empty
-            {
-                plHand.splice(i, 1); //just remove the card
-            }
-            else
-            {
-                plHand[i] = cardFromDeck;
-            }
-            return true;
+            if(!cardFromDeck) plHand.splice(i, 1); //just remove the card
+            else plHand[i] = cardFromDeck;
         }
     }
-    console.log("could not find specified card!");
-    return false;
 }
 
 //starts a full screen countdown at html elem display

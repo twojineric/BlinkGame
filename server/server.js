@@ -99,6 +99,7 @@ io.on('connection', (socket) => {
             theGame.roundWins[roundNum] = 0; //new round
 
             io.to(info.roomCode).emit('roundWin', {
+                name: winner.name,
                 gameData: theGame
             });
         }

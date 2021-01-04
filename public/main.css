@@ -184,6 +184,14 @@ input[type=number] {
     font-size: 1.5em;
 }
 
+#message {
+    font-family: 'Noto Sans', sans-serif;
+    font-size: 1.5em;
+    margin: auto;
+    width: 50%;
+    text-align: center;
+}
+
 #blink {
     font-family: 'Noto Sans', sans-serif;
     font-size: 2.5em;
