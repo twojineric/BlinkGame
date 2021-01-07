@@ -204,7 +204,6 @@ socket.on('startRound', (data) => {
     document.getElementById("startGame").hidden = true;
     document.getElementById('message').hidden = true;
     gameboard.hidden = false;
-    //startCountdown(3, MISSING);
     renderRoundCounter(theGame.roundWins, "roundDisp");
     renderPiles();
     document.getElementById("localHand").textContent = "";
@@ -223,8 +222,29 @@ socket.on('startRound', (data) => {
         document.getElementById("localName").textContent = theGame.player1.name;
         document.getElementById("opponentName").textContent = theGame.player2.name;
     }
-    attachListeners();
+    setTimer();
 });
+
+function setTimer()
+{
+    setTimeout(() => {
+        attachListeners();
+    }, 3000);
+
+    let sec = 3;
+    document.getElementById('timer').textContent= sec;
+    let timerID = setInterval(() => {
+        document.getElementById('timer').textContent= --sec;
+        if (sec <= 0) {
+            clearInterval(timerID);
+            document.getElementById('timer').textContent= "GO!";
+            setTimeout(() => {
+                document.getElementById('timer').textContent = "";
+            }, 2000);
+        }
+    }, 1000);
+
+}
 
 //updates data.playerNum's hand and attaches listeners if applicable
 socket.on('updateGamestate', (data) => {
@@ -438,18 +458,6 @@ function replaceCard(color, num, symbol, plNum)
             else plHand[i] = cardFromDeck;
         }
     }
-}
-
-//starts a full screen countdown at html elem display
-function startCountdown(seconds, disp)
-{
-    let timer = seconds;
-    let display = document.getElementById(disp);
-    setInterval(function () {
-        display.textContent = seconds;
-        timer--;
-        seconds = timer;
-    }, 1000);
 }
 
 const div = (attributes, children) => {

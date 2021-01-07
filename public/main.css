@@ -133,8 +133,10 @@ input[type=number] {
     padding: 10px 25px;
 }
 
-.discard-child:first-child {
-    margin-right: 20px;
+#timer {
+    padding: 1em 0px;
+    font-family: 'Noto Sans', sans-serif;
+    font-size: 3em;
 }
 
 #player1Name {
