@@ -2,20 +2,10 @@ import { Round } from './helpers/round.js';
 import { Game } from './helpers/game.js';
 let socket = io();
 
-const suitPositions =
-{
-  one: [[0, 0]],
-  two: [[0, -1], [0, 1]],
-  three: [[0, -1], [0, 0], [0, 1]],
-  four: [[-1, -1], [1, -1], [-1, 1], [1, 1]],
-  five: [[-1, -1], [1, -1], [0, 0], [-1, 1], [1, 1]]
-};
-
-let theGame;
-let currRound;
+let theGame; //game obj that is passed to the server, the game consists of an array of round objects
+let currRound; //curr round obj
 let rmcde;
 let modal = document.getElementById("myModal");
-let gameboard = document.getElementById("gameboard");
 
 let isP2; //used for rendering hands
 //boolean ensures that the correct set of cards are displayed at the bottom of the screen for each player
@@ -56,7 +46,8 @@ $( document ).ready(() => {
             return;
         }
         modal.style.display = "none";
-        document.getElementById("p2Options").hidden = false;
+        document.getElementById("message").hidden = false;
+        $('#message').text('P1 is configuring the game');
         document.getElementById("topEdge").style.display = "flex";
         isP2 = true;
         socket.emit('joinRoom', {
@@ -68,19 +59,23 @@ $( document ).ready(() => {
 
 socket.on('player1', (data) => {
     document.getElementById("player1Name").textContent = data.name;
+    rmcde = data.roomCode;
     document.getElementById('message').hidden = false;
     $('#message').text('Waiting for player 2');
-    rmcde = data.roomCode;
+    document.getElementById('rm').hidden = false;
+    $('#code').text(rmcde);
+
     console.log(`${data.name} has joined room ${rmcde}`);
-    document.getElementById('code').textContent = "Room Code: " + rmcde;
 });
 
 socket.on('player2', (data) => {
     document.getElementById("player2Name").textContent = data.name;
-    document.getElementById('message').hidden = true;
+    if(!isP2) document.getElementById('message').hidden = true; //causing some problems
     rmcde = data.roomCode;
+    document.getElementById('rm').hidden = false;
+    $('#code').text(rmcde);
+
     console.log(`${data.name} has joined room ${rmcde}`);
-    document.getElementById('code').textContent = "Room Code: " + rmcde;
 
     if(document.getElementById('player1Name').textContent.length == 0) return; //temp fix
     else
@@ -140,16 +135,11 @@ $('#startGame').on('click', () => {
 });
 
 socket.on('options', (round) => {
-    if(isP2)
-    {
-        document.getElementById("p2Options").textContent = `Best of ${round.numRounds}`;
-        document.getElementById("p2Ready").hidden = false;
-    }
-    else
-    {
-        document.getElementById("p1Options").textContent = `Best of ${round.numRounds}`;
-        document.getElementById("p1Ready").hidden = false;
-    }
+    if(isP2) document.getElementById("p2Ready").hidden = false;
+    else document.getElementById("p1Ready").hidden = false;
+
+    document.getElementById('message').hidden = false; //temp fix for line 73
+    $('#message').text(`Best of ${round.numRounds}`);
 
     $('#p1Ready').one('click', () => {
         $('#p1Ready').addClass("down");
@@ -201,13 +191,10 @@ socket.on('startRound', (data) => {
     $('#p2Ready').removeClass("down");
     $('#p1Ready').text("Ready Up");
     $('#p2Ready').text("Ready Up");
-    document.getElementById("startGame").hidden = true;
     document.getElementById('message').hidden = true;
-    gameboard.hidden = false;
+    document.getElementById("gameboard").hidden = false;
     renderRoundCounter(theGame.roundWins, "roundDisp");
     renderPiles();
-    document.getElementById("localHand").textContent = "";
-    document.getElementById("opponentHand").textContent = "";
     if(isP2) //render hands
     {
         renderHand(1, "localHand");
@@ -222,7 +209,7 @@ socket.on('startRound', (data) => {
         document.getElementById("localName").textContent = theGame.player1.name;
         document.getElementById("opponentName").textContent = theGame.player2.name;
     }
-    setTimer();
+    setTimer(); //sets a countdown
 });
 
 function setTimer()
@@ -258,9 +245,10 @@ socket.on('updateGamestate', (data) => {
 });
 
 socket.on('gameWinner', (win) => {
-    console.log(`${win.name} has won the game!`);
     theGame = win.gameData;
     renderRoundCounter(theGame.roundWins, "roundDisp");
+    document.getElementById('message').hidden = false;
+    $('#message').text(`${win.name} has won the game!`);
 });
 
 socket.on('roundWin', (info) => { //sent only if no one has won the game yet
@@ -305,7 +293,7 @@ function attachListeners()
         if(!cn.className.includes('hand')) continue;
         cn.onmousedown = function(event) {
             let testCard = event.path[0].className.split(' ');
-            //fixes cards not responding when the pip div elements were clicked
+            //fixes cards not responding when the pip elements were clicked
             if(testCard.length < 2) testCard = event.path[1].className.split(' ');
             if(testCard.length < 2) testCard = event.path[2].className.split(' ');
             let mouseClick = event.button;
@@ -351,6 +339,15 @@ function attachListeners()
         };
     }
 }
+
+const suitPositions =
+{
+  one: [[0, 0]],
+  two: [[0, -1], [0, 1]],
+  three: [[0, -1], [0, 0], [0, 1]],
+  four: [[-1, -1], [1, -1], [-1, 1], [1, 1]],
+  five: [[-1, -1], [1, -1], [0, 0], [-1, 1], [1, 1]]
+};
 
 //renders the card at the html elem.
 //if replace is true, then the elem is cleared before the card is appended.
@@ -403,9 +400,7 @@ function renderPiles()
 
 //renders the round counter at elem
 //the roundArr is the length of the max rounds playable, ie Bo5 should have len 5
-//a 1 means p1 won that round, same with p2.
-// 0 means the round is currently ongoing, -1 means that the round has not been played
-// an arrow is drawn under the round with value 0.
+//colors are deteremined by value at the specified index of roundArr.
 function renderRoundCounter(roundArr, elem, arrowElem = "arrow")
 {
     let display = document.getElementById(elem);
@@ -423,16 +418,16 @@ function renderRoundCounter(roundArr, elem, arrowElem = "arrow")
 
         switch(round)
         {
-            case 0:
+            case 0: //round is currently in progress, draw an arrow under this circle as well.
                 circle.className = "step inProgress";
                 arrow.className = "yesArrow";
                 break;
-            case 1:
-            case 2:
+            case 1: //p1 won
+            case 2: //p2 won
                 circle.className = `step win${round}`;
                 arrow.className = "noArrow";
                 break;
-            default: //case: -1
+            default: //case: -1, round has not been played yet
                 circle.className = "step";
                 arrow.className = "noArrow";
         }
@@ -460,22 +455,24 @@ function replaceCard(color, num, symbol, plNum)
     }
 }
 
-const div = (attributes, children) => {
-  const element = document.createElement("div");
-  if (attributes) {
-    for (const attrName in attributes) {
-      element.setAttribute(attrName, attributes[attrName]);
-    }
-  }
-  if (children) {
-    for (let i = 0; i < children.length; i++) {
-      const child = children[i];
-      if (typeof child === 'string') {
-        element.appendChild(document.createTextNode(child));
-      } else {
-        element.appendChild(child);
+//helper method to draw the pips in the correct orientation, used in renderCard()
+function div(attributes, children)
+{
+    const element = document.createElement("div");
+    if (attributes) {
+      for (const attrName in attributes) {
+        element.setAttribute(attrName, attributes[attrName]);
       }
     }
-  }
-  return element;
-};
+    if (children) {
+      for (let i = 0; i < children.length; i++) {
+        const child = children[i];
+        if (typeof child === 'string') {
+          element.appendChild(document.createTextNode(child));
+        } else {
+          element.appendChild(child);
+        }
+      }
+    }
+    return element;
+}

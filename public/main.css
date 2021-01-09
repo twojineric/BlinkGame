@@ -104,6 +104,10 @@ input[type=number] {
     cursor: pointer;
 }
 
+.buttons {
+    text-align: center;
+}
+
 .down {
     background-color: #27AE60;
 }
@@ -140,18 +144,14 @@ input[type=number] {
 }
 
 #player1Name {
-    height: 30px;
-    text-align: center;
-    margin: auto;
-    font-size: 2em;
-    font-weight: bold;
-    display: inline-block;
-    border-radius: 5px;
-    padding: 15px 0;
     background-color: #3498DB;
 }
 
 #player2Name {
+    background-color: #E74C3C;
+}
+
+.pName {
     height: 30px;
     text-align: center;
     margin: auto;
@@ -160,7 +160,6 @@ input[type=number] {
     display: inline-block;
     border-radius: 5px;
     padding: 15px 0;
-    background-color: #E74C3C;
 }
 
 #currRound {
@@ -181,7 +180,7 @@ input[type=number] {
     display: flex;
 }
 
-#code {
+#rm {
     font-family: 'Noto Sans', sans-serif;
     font-size: 1.5em;
 }

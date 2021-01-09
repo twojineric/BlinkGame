@@ -13,22 +13,17 @@
     <div class="mainContent">
 
         <div id="topEdge">
-            <div id= "player1Name" class="edge-child"></div>
+            <div id= "player1Name" class="edge-child pName"></div>
             <div id= "roundInfo" class="edge-child">
                 <div id="currRound"> </div>
                 <div id = "roundDisp"> </div>
                 <div id = "arrow">  </div>
             </div>
-            <div id= "player2Name" class="edge-child"></div>
+            <div id= "player2Name" class="edge-child pName"></div>
         </div> <br>
 
-        <div id = "code"> </div> <br>
+        <div id = "rm" hidden> Room Code: <span id = "code"></span></div> <br>
         <div id = "message" hidden> </div>
-
-        <div>
-            <div id = "p2Options" hidden>P1 is configuring the game</div>
-            <button type="button" name="readyUp2" id="p2Ready" hidden>Ready Up</button>
-        </div>
 
         <div id = "optionsMenu" class = "p1Only" hidden>
             <input type="radio" name="roundNumbers" value="bestOf1" id="bestOf1" checked>
@@ -43,8 +38,10 @@
             <button type="button" name="startGame" id = "startGame">Confirm Options</button>
         </div> <br>
 
-        <div class="p1Only" id = "p1Options"></div>
-        <button type="button" name="readyUp1" id = "p1Ready" hidden>Ready Up</button> <br>
+        <div class="buttons">
+            <button type="button" name="readyUp1" id="p1Ready" hidden>Ready Up</button>
+            <button type="button" name="readyUp2" id="p2Ready" hidden>Ready Up</button>
+        </div>
 
         <!-- The Modal popup window-->
         <div id="myModal" class="modal">
