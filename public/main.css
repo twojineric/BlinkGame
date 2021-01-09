@@ -79,6 +79,9 @@ input[type=number] {
     width: 50%;
     padding: 20px 0;
     text-align: center;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
     user-select: none;
 }
 
@@ -183,6 +186,11 @@ input[type=number] {
 #rm {
     font-family: 'Noto Sans', sans-serif;
     font-size: 1.5em;
+}
+
+#code {
+    border-bottom: 1px dotted;
+    cursor: pointer;
 }
 
 #message {

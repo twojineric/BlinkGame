@@ -14,6 +14,7 @@ $( document ).ready(() => {
 
     modal.style.display = "block";
     document.getElementById("topEdge").style.display = "none";
+    document.getElementById('rm').style.display = "none";
     $('#createRoom').on('click', () => {
         let username = $('#nameCreate').val().trim();
         if(!username)
@@ -58,24 +59,20 @@ $( document ).ready(() => {
 });
 
 socket.on('player1', (data) => {
-    document.getElementById("player1Name").textContent = data.name;
     rmcde = data.roomCode;
+    document.getElementById("player1Name").textContent = data.name;
     document.getElementById('message').hidden = false;
     $('#message').text('Waiting for player 2');
-    document.getElementById('rm').hidden = false;
+    document.getElementById('rm').style.display = "inline-block";
     $('#code').text(rmcde);
-
-    console.log(`${data.name} has joined room ${rmcde}`);
 });
 
 socket.on('player2', (data) => {
+    rmcde = data.roomCode;
     document.getElementById("player2Name").textContent = data.name;
     if(!isP2) document.getElementById('message').hidden = true; //causing some problems
-    rmcde = data.roomCode;
-    document.getElementById('rm').hidden = false;
+    document.getElementById('rm').style.display = "inline-block";
     $('#code').text(rmcde);
-
-    console.log(`${data.name} has joined room ${rmcde}`);
 
     if(document.getElementById('player1Name').textContent.length == 0) return; //temp fix
     else
@@ -89,6 +86,15 @@ socket.on('player2', (data) => {
 
 socket.on('update', (data) => {
     document.getElementById("player1Name").textContent = data.p1Name;
+});
+
+$('#code').on('click', () => {
+    document.execCommand("copy");
+});
+
+document.getElementById('code').addEventListener("copy", (e) => {
+    e.preventDefault();
+    if (e.clipboardData) e.clipboardData.setData("text/plain", document.getElementById('code').textContent);
 });
 
 $('#startGame').on('click', () => {
