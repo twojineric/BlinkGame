@@ -1,7 +1,7 @@
 import { Card } from './card.js'
 export { Deck };
 
-let symbolArr = ['✖', '◆', '●', '↯', '▲', '★'];
+let symbolArr = ['✖', '◆', '●', '■', '▲', '★'];
 let colorArr = ['blue', 'red', 'green', 'black', 'yellow', 'purple'];
 let numArr = ["one", "two", "three", "four", "five"];
 

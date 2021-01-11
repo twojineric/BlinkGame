@@ -32,6 +32,7 @@ input[type=number] {
     width: 5em;
     height: 7em;
     position: relative;
+    font-family: 'M PLUS 1p', sans-serif;
 }
 
 .card.yellow {
