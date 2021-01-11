@@ -22,11 +22,6 @@ server.listen(port, () => {
 });
 
 io.on('connection', (socket) => {
-	console.log('User connected.');
-
-    socket.on('disconnect', () => {
-        console.log('User disconnected.');
-    });
 
     socket.on('createRoom', (data) => {
         let roomCode = genRoomCode(5);
@@ -37,15 +32,19 @@ io.on('connection', (socket) => {
         });
     });
 
-    socket.on('joinRoom', async (data) => {
+    socket.on('validateRoom', async (data) => { //if roomcode has another person in it, join the room
         let members = await io.of("/").in(data.roomCode).allSockets();
-        if(true)
+        if(members.size == 1)
         {
             socket.join(data.roomCode);
             io.to(data.roomCode).emit('player2', {
                 name: data.name,
                 roomCode: data.roomCode
             });
+        }
+        else
+        {
+            io.to(socket.id).emit('invalid');
         }
     });
 

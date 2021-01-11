@@ -33,7 +33,6 @@ $( document ).ready(() => {
     });
 
     $('#joinRoom').on('click', () => {
-        //implement a way to check if the room code is valid
         let username = $('#nameJoin').val().trim();
         let roomCode = $('#roomCode').val().trim().toUpperCase();
         if(!username || !roomCode)
@@ -46,16 +45,17 @@ $( document ).ready(() => {
             alert("roomcode should be 5 characters long!");
             return;
         }
-        modal.style.display = "none";
-        document.getElementById("message").hidden = false;
-        $('#message').text('P1 is configuring the game');
-        document.getElementById("topEdge").style.display = "flex";
         isP2 = true;
-        socket.emit('joinRoom', {
+        socket.emit('validateRoom', {
             name: username,
             roomCode: roomCode
         });
     });
+});
+
+socket.on('invalid', () => {
+    alert(`The roomcode you entered is not valid! OR the room is full!`);
+    return;
 });
 
 socket.on('player1', (data) => {
@@ -70,9 +70,18 @@ socket.on('player1', (data) => {
 socket.on('player2', (data) => {
     rmcde = data.roomCode;
     document.getElementById("player2Name").textContent = data.name;
-    if(!isP2) document.getElementById('message').hidden = true; //causing some problems
     document.getElementById('rm').style.display = "inline-block";
     $('#code').text(rmcde);
+
+    if(isP2)
+    {
+        modal.style.display = "none";
+        document.getElementById("message").hidden = false;
+        $('#message').text('P1 is configuring the game');
+        document.getElementById("topEdge").style.display = "flex";
+    }
+
+    if(!isP2) document.getElementById('message').hidden = true; //causing some problems
 
     if(document.getElementById('player1Name').textContent.length == 0) return; //temp fix
     else
