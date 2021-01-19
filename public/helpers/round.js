@@ -13,15 +13,15 @@ class Round
         this.players.push(player1Obj);
         this.players.push(player2Obj);
 
-        //make deck and give each player half
-        let d = new Deck();
-        let len = d.theDeck.length;
-
         //clear the player's current deck and hand, if any
         this.players[0].playerDeck.length = 0;
         this.players[1].playerDeck.length = 0;
         this.players[0].playerHand.length = 0;
         this.players[1].playerHand.length = 0;
+
+        //make deck and give each player half
+        let d = new Deck();
+        let len = d.theDeck.length;
 
         for(let i = 0; i < len; i++)
         {
@@ -37,8 +37,6 @@ class Round
                 p.playerHand.push(p.playerDeck.pop());
             }
         }
-
-        //add countdown
 
         //flip the top card of each deck to the play area
         this.pile1 = this.players[0].playerDeck.pop();

@@ -66,7 +66,43 @@ io.on('connection', (socket) => {
 
     socket.on('updateGamestate', (data) => {
         io.to(data.roomCode).emit('updateGamestate', data);
-    })
+    });
+
+    socket.on('noMoves', (data) => {
+        let symbolArr = ['✖', '◆', '●', '■', '▲', '★'];
+        let colorArr = ['blue', 'red', 'green', 'black', 'yellow', 'purple'];
+        let numArr = ["one", "two", "three", "four", "five"];
+
+        for (let i = symbolArr.length - 1; i > 0; i--)
+        {
+            let j = Math.floor(Math.random() * (i + 1));
+            let temp1 = symbolArr[i];
+            symbolArr[i] = symbolArr[j];
+            symbolArr[j] = temp1;
+            let k = Math.floor(Math.random() * (i + 1));
+            let temp2 = colorArr[i];
+            colorArr[i] = colorArr[k];
+            colorArr[k] = temp2;
+        }
+        for(let i = numArr.length - 1; i > 0; i--)
+        {
+            let j = Math.floor(Math.random() * (i + 1));
+            let temp = numArr[i];
+            numArr[i] = numArr[j];
+            numArr[j] = temp;
+        }
+        //we shuffle the decks like this rather than just do Math.random()
+        //to ensure the new cards on the piles are as different from each other as possible.
+        //this shouldnt be called that often, so speed isnt an issue.
+        io.to(data.roomCode).emit('noMoves', {
+            p1Color: colorArr[0],
+            p1Symbol: symbolArr[0],
+            p1Num: numArr[0],
+            p2Color: colorArr[colorArr.length - 1],
+            p2Symbol: symbolArr[symbolArr.length - 1],
+            p2Num: numArr[numArr.length - 1]
+        });
+    });
 
     socket.on('roundWin', (info) => {
         let theGame = info.gameData;

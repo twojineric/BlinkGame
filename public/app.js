@@ -1,5 +1,6 @@
 import { Round } from './helpers/round.js';
 import { Game } from './helpers/game.js';
+import { Card } from './helpers/card.js';
 let socket = io();
 
 let theGame; //game obj that is passed to the server, the game consists of an array of round objects
@@ -149,6 +150,41 @@ $('#startGame').on('click', () => {
     });
 });
 
+//runs a check, if there are truly no more moves, the piles are replaced with random cards.
+$('#noValidMoves').on('click', () => {
+    let cardArr1 = document.getElementById("localHand").childNodes;
+    let cardArr2 = document.getElementById("opponentHand").childNodes;
+    for(let childnode of cardArr1)
+    {
+        let arr = childnode.className.split(" ");
+        if(arr[0] === currRound.pile1.color || arr[1] === currRound.pile1.num || arr[2] === currRound.pile1.symbol)
+        {
+            alert('You have a valid move!');
+            return;
+        }
+        if(arr[0] === currRound.pile2.color || arr[1] === currRound.pile2.num || arr[2] === currRound.pile2.symbol)
+        {
+            alert('You have a valid move!');
+            return;
+        }
+    }
+    for(let childnode of cardArr2)
+    {
+        let arr = childnode.className.split(" ");
+        if(arr[0] === currRound.pile1.color || arr[1] === currRound.pile1.num || arr[2] === currRound.pile1.symbol)
+        {
+            alert('The opponent has a valid move!');
+            return;
+        }
+        if(arr[0] === currRound.pile2.color || arr[1] === currRound.pile2.num || arr[2] === currRound.pile2.symbol)
+        {
+            alert('The opponent has a valid move!');
+            return;
+        }
+    }
+    socket.emit('noMoves', { roomCode: rmcde });
+});
+
 socket.on('options', (round) => {
     if(isP2) document.getElementById("p2Ready").hidden = false;
     else document.getElementById("p1Ready").hidden = false;
@@ -245,7 +281,6 @@ function setTimer()
             }, 2000);
         }
     }, 1000);
-
 }
 
 //updates data.playerNum's hand and attaches listeners if applicable
@@ -258,6 +293,14 @@ socket.on('updateGamestate', (data) => {
     renderHand(data.playerNum , handLoc); //rerender the hand
     if(data.playerNum == owner) attachListeners();
 });
+
+//called when there are no more valid moves.
+//the server has changed the two cards on the center piles, so we update them.
+socket.on('noMoves', (data) => {
+    currRound.pile1 = new Card(data.p1Color, data.p1Num, data.p1Symbol);
+    currRound.pile2 = new Card(data.p2Color, data.p2Num, data.p2Symbol);
+    renderPiles();
+})
 
 socket.on('gameWinner', (win) => {
     theGame = win.gameData;
