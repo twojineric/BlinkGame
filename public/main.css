@@ -70,7 +70,7 @@ input[type=number] {
 }
 
 .card-suit {
-  font-size: 1.3em;
+  font-size: 1.25em;
   position: absolute;
 }
 
@@ -159,7 +159,7 @@ input[type=number] {
     height: 30px;
     text-align: center;
     margin: auto;
-    font-size: 2em;
+    font-size: 1.75em;
     font-weight: bold;
     display: inline-block;
     border-radius: 5px;

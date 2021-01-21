@@ -81,8 +81,7 @@ socket.on('player2', (data) => {
         $('#message').text('P1 is configuring the game');
         document.getElementById("topEdge").style.display = "flex";
     }
-
-    if(!isP2) document.getElementById('message').hidden = true; //causing some problems
+    else document.getElementById('message').hidden = true; //causing some problems
 
     if(document.getElementById('player1Name').textContent.length == 0) return; //temp fix
     else
@@ -188,8 +187,7 @@ $('#noValidMoves').on('click', () => {
 socket.on('options', (round) => {
     if(isP2) document.getElementById("p2Ready").hidden = false;
     else document.getElementById("p1Ready").hidden = false;
-
-    document.getElementById('message').hidden = false; //temp fix for line 73
+    document.getElementById('message').hidden = false;
     $('#message').text(`Best of ${round.numRounds}`);
 
     $('#p1Ready').one('click', () => {
